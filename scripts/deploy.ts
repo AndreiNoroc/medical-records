@@ -24,6 +24,10 @@ async function main() {
   const Doctor = await ethers.getContractFactory("Doctor");
   const doctor = await Doctor.deploy();
   await doctor.deployed();
+
+  const Client = await ethers.getContractFactory("Client");
+  const client = await Client.deploy();
+  await client.deployed();
 }
 
 // We recommend this pattern to be able to use async/await everywhere

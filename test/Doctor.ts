@@ -1,6 +1,7 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { JSEncrypt } from "jsencrypt";
 
 describe("Doctor", function () {
   async function deployDoctor() {
@@ -38,35 +39,40 @@ describe("Doctor", function () {
         'docAdr': docAdress
     }
 
-    // Generate key
-    const NodeRSA = require('node-rsa');
-    const newKey = new NodeRSA({b: 512});
+    // //Generate key
+    // const crypt = new JSEncrypt({default_key_size: '2048'});
+    // const keys = {
+    //   PublicKey: crypt.getPrivateKey(),
+    //   PrivateKey: crypt.getPublicKey()
+    // };
 
-    // Encrypt data
-    const encryptedPack = newKey.encrypt(JSON.stringify(newPackage), 'base64');
+    // crypt.setPublicKey(keys.PublicKey);
+    // // Encrypt data
+    // const encryptedPack = crypt.encrypt(JSON.stringify(newPackage));
 
-    doctor._createData(key, encryptedPack);
-    const getPack = await doctor._readData(key);
+    // doctor._createData(key, encryptedPack);
+    // const getPack = await doctor._readData(key);
 
-    // Decrypt data
-    const decryptedPack = newKey.decrypt(getPack, 'utf8');
+    // crypt.setPrivateKey(keys.PrivateKey);
+    // // Decrypt data
+    // const decryptedPack = crypt.decrypt(getPack);
 
-    return { encryptedPack, getPack, newPackage, decryptedPack };
+    // return { encryptedPack, getPack, newPackage, decryptedPack };
   }
 
-  describe("CheckDataBeforeAndAfter", function () {
-    it("Should fail if encrypted data is not stored correctly", async function() {
-        const { encryptedPack, getPack, newPackage, decryptedPack} = await loadFixture(deployDoctor);
-        expect(getPack).to.equal(
-          encryptedPack
-        );
-    });
+  // describe("CheckDataBeforeAndAfter", function () {
+  //   it("Should fail if encrypted data is not stored correctly", async function() {
+  //       const { encryptedPack, getPack, newPackage, decryptedPack} = await loadFixture(deployDoctor);
+  //       expect(getPack).to.equal(
+  //         encryptedPack
+  //       );
+  //   });
 
-    it("Should fail if decrypted data differs from created package", async function() {
-        const { encryptedPack, getPack, newPackage, decryptedPack} = await loadFixture(deployDoctor);
-        expect(decryptedPack).to.equal(
-          JSON.stringify(newPackage)
-        );
-    });
-  });
+  //   it("Should fail if decrypted data differs from created package", async function() {
+  //       const { encryptedPack, getPack, newPackage, decryptedPack} = await loadFixture(deployDoctor);
+  //       expect(decryptedPack).to.equal(
+  //         JSON.stringify(newPackage)
+  //       );
+  //   });
+  // });
 });

@@ -1,20 +1,13 @@
 import React from 'react';
 import { ethers } from 'ethers';
-import Doctor  from '../artifacts/contracts/Doctor.sol/Doctor.json';
-import { JSEncrypt } from "jsencrypt";
+import Doctor from '../../artifacts/contracts/Doctor.sol/Doctor.json';
 
 const doctorAdress = 0xcf7ed3acca5a467e9e704c703e8d87f634f;
 
-function DoctorInterface() {
-    const [fullName, setFullName] = React.useState('');
+function DoctorGetData() {
     const [identityNumber, setIdentityNumber] = React.useState('');
     const [consultType, setConsultType] = React.useState('');
-    const [description, setDescription] = React.useState('');
     const [consultDate, setConsultDate] = React.useState('');
-
-    const handleFullName = (event) => {
-        setFullName(event.target.value);
-    };
     
     const handleIdentityNumber = (event) => {
         setIdentityNumber(event.target.value);
@@ -22,10 +15,6 @@ function DoctorInterface() {
 
     const handleConsultType = (event) => {
         setConsultType(event.target.value);
-    };
-
-    const handleDescription = (event) => {
-        setDescription(event.target.value);
     };
 
     const handleConsultDate = (event) => {
@@ -48,41 +37,12 @@ function DoctorInterface() {
             const preKey = identityNumber + consultDate + consultType;
             const key = ethers.utils.solidityKeccak256(["string"], [preKey]);
 
-            const message = {
-                'name': fullName,
-                'description': description
-            };
-
-            const sign = await signer.signMessage(JSON.stringify(message));
-            const docAdress = signer.address;
-
-            const newPackage = {
-                'message': JSON.stringify(message),
-                'sign': sign,
-                'docAdress': docAdress
-            }
-
-            const crypt = new JSEncrypt({default_key_size: 2048});
-            const keys = {
-                PublicKey: crypt.getPublicKey(),
-                PrivateKey: crypt.getPrivateKey()
-            };
-
-            crypt.setPublicKey(keys.PublicKey);
-
-            const encryptedPack = crypt.encrypt(newPackage);
-
-            const transaction = await contract._createData(key, encryptedPack);
-            await transaction.wait();
+            
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor='name'>Name</label>
-                <input type="text" name="name" value={fullName} onChange={handleFullName} />
-            </div>
             <div>
                 <label htmlFor='identityNumber'>Identity Number</label>
                 <input type="text" name="idno" value={identityNumber} onChange={handleIdentityNumber} />
@@ -92,16 +52,12 @@ function DoctorInterface() {
                 <input type="text" name="ct" value={consultType} onChange={handleConsultType} />
             </div>
             <div>
-                <label htmlFor='description'>Description</label>
-                <input type="text" name="description" value={description} onChange={handleDescription} />
-            </div>
-            <div>
                 <label htmlFor='date'>Date</label>
                 <input type="date" id="cdate" name="cdate"  value={consultDate} onChange={handleConsultDate} />
             </div>
-            <input type="submit" value="Submit" />
+            <input type="submit" value="Get" />
         </form>
     );
 }
 
-export default DoctorInterface;
+export default DoctorGetData;

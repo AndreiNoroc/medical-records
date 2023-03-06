@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./components/Home";
-import Client from "./components/Client";
 import Pharmacist from "./components/Pharmacist";
-import DoctorInterface from "./components/DoctorInterface";
+import DoctorAction from "./components/doctor/DoctorAction";
+import ClientInterface from "./components/client/ClientInterface";
 
 function App() {
   return (
@@ -11,8 +11,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="doctor" element={<DoctorInterface />} />
-          <Route path="client" element={<Client />} />
+          <Route path="doctor" element={<DoctorAction />} />
+          <Route path="client" element={<ClientInterface />} />
           <Route path="pharmacist" element={<Pharmacist />} />
         </Route>
       </Routes>
