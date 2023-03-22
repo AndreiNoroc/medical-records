@@ -18,6 +18,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.13.0",
     "chai": "^4.3.7",
+    "env-cmd": "^10.1.0",
     "ethers": "^5.7.2",
     "hardhat": "^2.13.0",
     "hardhat-gas-reporter": "^1.0.9",
@@ -40,10 +41,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test:react": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "env-cmd react-scripts start",
+    "build": "env-cmd react-scripts build",
+    "test:react": "env-cmd react-scripts test",
+    "eject": "env-cmd nreact-scripts eject",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "eslintConfig": {

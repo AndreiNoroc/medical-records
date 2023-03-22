@@ -14,11 +14,4 @@ function ClientInterface() {
     );
 };
 
-export let keysGenerated = false;
-
-export function isGenerated() {
-    keysGenerated = true;
-}
-
-
 export default ClientInterface;
