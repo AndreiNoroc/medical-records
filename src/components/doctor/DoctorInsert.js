@@ -1,6 +1,6 @@
 import React from 'react';
 import MedicalRecordsContract from '../../artifacts/contracts/MedicalRecordsContract.sol/MedicalRecordsContract.json';
-import { JSEncrypt } from "jsencrypt";
+import JSEncrypt from 'jsencrypt';
 const Web3 = require("web3");
 
 function DoctorInterface() {
@@ -52,22 +52,21 @@ function DoctorInterface() {
                     'description': description
                 };
 
-                const hashMessage = web3.utils.keccak256(JSON.stringify(message));
-                // console.log(web3.eth.abi.decodeParameter('uint256', hashMessage));
+                const stringifyMessage = JSON.stringify(message);
+                const hashMessage = web3.utils.keccak256(stringifyMessage);
                 const signature = await web3.eth.sign(hashMessage, accounts[0]);
                 
                 const newPackage = {
-                    'message': hashMessage,
+                    'message': stringifyMessage,
                     'sign': signature,
                     'docAdress': accounts[0]
                 }
     
-                const crypt = new JSEncrypt({default_key_size: 2048});
-                crypt.setPublicKey(clientPublicKey);
-                const encryptedPack = crypt.encrypt(newPackage);    
-    
+                const encryptorInstance = new JSEncrypt();
+                encryptorInstance.setPublicKey(clientPublicKey);
+                const encryptedPack = encryptorInstance.encrypt(JSON.stringify(newPackage));    
+
                 const transaction = await contract.methods.insertData(key, encryptedPack).send({ from: accounts[0] });
-                console.log(transaction);    
             } catch (error) {
                 console.log(error);
             }
@@ -99,9 +98,8 @@ function DoctorInterface() {
                 </div>
                 <div>
                     <label htmlFor='clientPublicKey'>Client Public Key</label>
-                    <input type="text" name="clientPublicKey" value={clientPublicKey} onChange={handleclientPublicKey} />
+                    <textarea name="clientPublicKey" value={clientPublicKey} onChange={handleclientPublicKey} />
                 </div>
-                {/* <input type="submit" value="Insert" /> */}
             </form>
             <button onClick={handleSubmit}> Insert </button>
         </div>

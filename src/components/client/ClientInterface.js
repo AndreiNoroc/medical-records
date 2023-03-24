@@ -1,6 +1,5 @@
 import React from 'react';
 import ClientGetData from './ClientGetData';
-import ClientGenerateKeys from './ClientGenerateKeys';
 
 function ClientInterface() {
     return (
@@ -8,7 +7,6 @@ function ClientInterface() {
             <h1>Client</h1>
             <div>
                 <ClientGetData />
-                <ClientGenerateKeys />
             </div>
         </div>
     );
