@@ -7,6 +7,9 @@ contract MedicalRecordsContract {
     mapping (address => bool) public isDoctor;
     mapping (bytes32 => bool) public isOutdated;
 
+    event RequestDataTransaction(address indexed _from, address indexed _to, string _value);
+    event SendResponse(address indexed _from, address indexed _to, string _value);
+
     constructor() {
         isDoctor[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = false;
         isDoctor[0x70997970C51812dc3A010C7d01b50e0d17dc79C8] = true;
@@ -57,5 +60,13 @@ contract MedicalRecordsContract {
 
     function outdateData(bytes32 key) public {
         isOutdated[key] = true;
+    }
+
+    function requestDataFromClient(address _to, string memory _value) public {
+        emit RequestDataTransaction(msg.sender, _to, _value);
+    }
+
+    function sendResponse(address _to, string memory _value) public {
+        emit SendResponse(msg.sender, _to, _value);
     }
 }

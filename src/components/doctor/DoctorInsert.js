@@ -1,6 +1,8 @@
 import React from 'react';
 import MedicalRecordsContract from '../../artifacts/contracts/MedicalRecordsContract.sol/MedicalRecordsContract.json';
 import JSEncrypt from 'jsencrypt';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Web3 = require("web3");
 
 function DoctorInterface() {
@@ -53,20 +55,21 @@ function DoctorInterface() {
                 };
 
                 const stringifyMessage = JSON.stringify(message);
-                const hashMessage = web3.utils.keccak256(stringifyMessage);
-                const signature = await web3.eth.sign(hashMessage, accounts[0]);
-                
+                const signature = await web3.eth.personal.sign(stringifyMessage, accounts[0]);
+
                 const newPackage = {
                     'message': stringifyMessage,
                     'sign': signature,
-                    'docAdress': accounts[0]
+                    'docAddress': accounts[0]
                 }
     
                 const encryptorInstance = new JSEncrypt();
                 encryptorInstance.setPublicKey(clientPublicKey);
-                const encryptedPack = encryptorInstance.encrypt(JSON.stringify(newPackage));    
+                const encryptedPack = encryptorInstance.encrypt(JSON.stringify(newPackage));
 
                 const transaction = await contract.methods.insertData(key, encryptedPack).send({ from: accounts[0] });
+
+                toast.success("Entry successfully added!");
             } catch (error) {
                 console.log(error);
             }
@@ -102,6 +105,7 @@ function DoctorInterface() {
                 </div>
             </form>
             <button onClick={handleSubmit}> Insert </button>
+            <ToastContainer />
         </div>
     );
 }
