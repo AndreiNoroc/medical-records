@@ -67,15 +67,16 @@ function ClientGetData() {
                 const decryptedPack = JSON.parse(decryptorInstance.decrypt(transaction));
     
                 if (decryptedPack) {
+                    console.log(decryptedPack.docAddress);
                     console.log(await web3.eth.personal.ecRecover(decryptedPack.message, decryptedPack.sign));
-                    if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAdress) {
+                    if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAddress) {
                         console.log(decryptedPack.message);
-                        const jsonMessage = JSON.parse(decryptedPack.message); 
+                        const jsonMessage = JSON.parse(decryptedPack.message);
                         setClientGetResult("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
                     } else {
                         toast.error("Message is corrupt!");
                         setClientGetResult('');
-                    } 
+                    }
                 } else {
                     toast.error("Data does not exist!");
                     setClientGetResult('');
@@ -122,7 +123,12 @@ function ClientGetData() {
                         encryptorInstance.setPublicKey(entityPublicKey);
                         const encryptData = encryptorInstance.encrypt(JSON.stringify(newPackage));
         
-                        const transaction = await contract.methods.SendResponse(setReceivedTo, encryptData).send({ from: accounts[0] });
+                        console.log(encryptData);
+
+                        console.log(receivedTo);
+
+                        const transaction = await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
+                        console.log(transaction);
                     } else {
                         toast.error("Message for sending is corrupt!");
                     } 
@@ -169,6 +175,8 @@ function ClientGetData() {
                         const rcvKey = setTimeout(() => {
                             setReceivedKey(null);
                         }, 15000);
+
+                        setClientGetResult('');
                     
                         return () => {
                             clearTimeout(rcvKey);
