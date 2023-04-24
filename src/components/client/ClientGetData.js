@@ -15,14 +15,10 @@ function ClientGetData() {
     const [receivedKey, setReceivedKey] = React.useState('');
     const [auxReceivedKey, setAuxReceivedKey] = React.useState('');
     const [receivedLogId, setReceivedLogId] = React.useState('');
-    const [auxReceivedLogId, setAuxReceivedLogId] = React.useState('');
     const [receivedTo, setReceivedTo] = React.useState('');
 
     const [acceptPrivateKey, setAcceptPrivateKey] = React.useState('');
     const [entityPublicKey, setEntityPublicKey] = React.useState('');
-
-    const web3Accept = new Web3(window.ethereum);
-    const contractAccept = new web3Accept.eth.Contract(MedicalRecordsContract.abi, web3Accept.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
 
     const handleIdentityNumber = (event) => {
         setIdentityNumber(event.target.value);
@@ -129,6 +125,8 @@ function ClientGetData() {
 
                         const transaction = await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
                         console.log(transaction);
+
+                        setReceivedKey('');
                     } else {
                         toast.error("Message for sending is corrupt!");
                     } 
@@ -143,53 +141,46 @@ function ClientGetData() {
 
     React.useEffect(() => {
         const getPastEventsFromDoc = async () => {
+            const web3Accept = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
+            const web3Browser = new Web3(window.ethereum);
+            const contractAccept = new web3Accept.eth.Contract(MedicalRecordsContract.abi, web3Accept.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+
             await window.ethereum.request({method: 'eth_requestAccounts'});
-            const accounts =  await web3Accept.eth.getAccounts();
-    
-            const blockNo = await web3Accept.eth.getBlockNumber();
+            const accounts =  await web3Browser.eth.getAccounts();
     
             const options = {
                 filter: {_to: accounts[0]},
-                fromBlock: blockNo
+                fromBlock: 'latest'
             };
     
-            return options;
-        };
-
-        const intervalGetEvent = setInterval(() => {
-            getPastEventsFromDoc()
-            .then((op) => {
-                console.log(op);
-                contractAccept.events.RequestDataTransaction(op, function(error, event){
-                    console.log(event);
-                    setAuxReceivedLogId(event.id);
-                    setAuxReceivedKey(event.returnValues._value);
-                    
-                    if (auxReceivedLogId !== receivedLogId) {
-                        setReceivedLogId(auxReceivedLogId);
-                        setReceivedKey(auxReceivedKey);
-                        setReceivedTo(event.returnValues._from);
-    
-                        toast.info("Accept to send data in next 15 seconds!");
-    
-                        const rcvKey = setTimeout(() => {
-                            setReceivedKey(null);
-                        }, 15000);
-
-                        setClientGetResult('');
-                    
-                        return () => {
-                            clearTimeout(rcvKey);
-                        };
-                    }
-                });
+            contractAccept.once('RequestDataTransaction', options, function(error, event) {
+                console.log(event);
+                setReceivedLogId(event.id);
+                setAuxReceivedKey(event.returnValues._value);
+                setReceivedTo(event.returnValues._from);
             });
-        }, 20000);
-
-        return () => {
-            clearInterval(intervalGetEvent);
         };
+
+        getPastEventsFromDoc();
     });
+
+    React.useEffect(() => {
+        if (auxReceivedKey) {
+            setReceivedKey(auxReceivedKey);
+
+            toast.info("Accept to send data in next 15 seconds!");
+
+            const rcvKey = setTimeout(() => {
+                setReceivedKey(null);
+            }, 15000);
+
+            setClientGetResult('');
+        
+            return () => {
+                clearTimeout(rcvKey);
+            };
+        }
+    }, [receivedLogId]);
     
     return (
         <div style={{display: "flex", justifyContent: "space-around"}}>
