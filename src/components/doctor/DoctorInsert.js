@@ -67,11 +67,12 @@ function DoctorInterface() {
                 encryptorInstance.setPublicKey(clientPublicKey);
                 const encryptedPack = encryptorInstance.encrypt(JSON.stringify(newPackage));
 
-                const transaction = await contract.methods.insertData(key, encryptedPack).send({ from: accounts[0] });
+                await contract.methods.insertData(key, encryptedPack).send({ from: accounts[0] });
 
                 toast.success("Entry successfully added!");
-            } catch (error) {
-                console.log(error);
+            } catch (err) {
+                console.log(err);
+                toast.error(err);
             }
         }
     };

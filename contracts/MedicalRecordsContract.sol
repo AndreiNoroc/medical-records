@@ -3,9 +3,9 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 
 contract MedicalRecordsContract {
-    mapping (bytes32 => string) public userData;
-    mapping (address => bool) public isDoctor;
-    mapping (bytes32 => bool) public isOutdated;
+    mapping (bytes32 => string) private userData;
+    mapping (address => bool) private isDoctor;
+    mapping (bytes32 => bool) private isOutdated;
 
     event RequestDataTransaction(address indexed _from, address indexed _to, string _value);
     event SendResponse(address indexed _from, address indexed _to, string _value);
@@ -28,38 +28,26 @@ contract MedicalRecordsContract {
     fallback() external payable {}
 
     function insertData(bytes32 key, string memory content) public {
-        if (isDoctor[msg.sender]) {
-            console.log("\n");
-            console.log("content");
-            console.log("\n");
+        require(isDoctor[msg.sender], "Current account is not a doctor");
+        // console.log(userData[key]);
+        // console.log(content);
 
-            console.log("\n");
-            console.log("Doctor");
-            console.log("\n");
-            
-            userData[key] = content;
-            isOutdated[key] = false;
-            
-            console.log("\n");
-            console.log(userData[key]);
-            console.log("\n");
-        }
+        // require(keccak256(abi.encodePacked(userData[key])) != keccak256(abi.encodePacked(content)), "Data already exists!");
+
+        userData[key] = content;
+        isOutdated[key] = false;
     }
 
     function readData(bytes32 key) public view returns (string memory) {
-        console.log("\n");
-        console.log("Client");
-        console.log("\n");
-
-        console.log("\n");
-        console.log(userData[key]);
-        console.log("\n");
-
         return userData[key];
     }
 
     function outdateData(bytes32 key) public {
         isOutdated[key] = true;
+    }
+
+    function isKeyOutdated(bytes32 key) public view returns (bool) {
+        return isOutdated[key];
     }
 
     function requestDataFromClient(address _to, string memory _value) public {

@@ -5,13 +5,15 @@ import 'react-toastify/dist/ReactToastify.css';
 import JSEncrypt from 'jsencrypt';
 const Web3 = require("web3");
 
-function DoctorGetData() {
+function PharmacistGetData() {
     const [identityNumber, setIdentityNumber] = React.useState('');
     const [consultType, setConsultType] = React.useState('');
     const [consultDate, setConsultDate] = React.useState('');
     const [accountAddress, setAccountAddress] = React.useState('');
     const [privateKey, setPrivateKey] = React.useState('');
     
+    const [dataKey, setDataKey] = React.useState('');
+
     const [receivedData, setReceivedData] = React.useState('');
     const [auxReceivedData, setAuxReceivedData] = React.useState('');
     const [receivedLogId, setReceivedLogId] = React.useState('');
@@ -53,13 +55,29 @@ function DoctorGetData() {
 
                 const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
 
+                // trebuie facute verificari
+                setDataKey(key);
+
                 console.log(await transaction);
             } catch(error) {
                 console.log(error);
             }
         }
     };
-    
+
+    const handleOutdate = async () => {
+        const web3 = new Web3(window.ethereum);
+                
+        await window.ethereum.request({method: 'eth_requestAccounts'});
+        const accounts = await web3.eth.getAccounts();
+
+        const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+
+        console.log(accountAddress);
+
+        await contract.methods.outdateData(dataKey).send({ from: accounts[0] });
+    };
+
     React.useEffect(() => {
         const getPastEventsFromDoc = async () => {
             const web3Accept = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
@@ -113,6 +131,7 @@ function DoctorGetData() {
 
     return (
         <div style={{display: "flex", justifyContent: "space-around"}}>
+            <h1>Pharmacist</h1>
             <div>
                 <form>
                     <div>
@@ -141,10 +160,11 @@ function DoctorGetData() {
             </div>
             <div>
                 <textarea readOnly style={{ resize: "none", }} rows={20} cols={30} defaultValue={receivedData}/>
+                { receivedData ? (<button onClick={handleOutdate}> Outdate </button>) : (<p></p>)}
             </div>
             <ToastContainer />
         </div>
     );
 }
 
-export default DoctorGetData;
+export default PharmacistGetData;
