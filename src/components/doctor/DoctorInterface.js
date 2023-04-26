@@ -1,8 +1,8 @@
 import React from 'react';
 import DoctorGetData from './DoctorGet';
-import DoctorInterface from './DoctorInsert';
+import DoctorInsert from './DoctorInsert';
 
-function DoctorAction() {
+function DoctorInterface() {
     const [flag, setActive] = React.useState(false);
 
     const handleClickInsertData = async () => {
@@ -30,10 +30,10 @@ function DoctorAction() {
             </div>
 
             <div>
-                {flag ? <DoctorInterface /> : <DoctorGetData />}
+                {flag ? <DoctorInsert /> : <DoctorGetData />}
             </div>
         </div>
     );
 }
 
-export default DoctorAction;
+export default DoctorInterface;

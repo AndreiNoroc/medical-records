@@ -11,6 +11,7 @@ function PharmacistGetData() {
     const [consultDate, setConsultDate] = React.useState('');
     const [accountAddress, setAccountAddress] = React.useState('');
     const [privateKey, setPrivateKey] = React.useState('');
+    const [drugsList, setDrugsList] = React.useState('');
     
     const [dataKey, setDataKey] = React.useState('');
 
@@ -78,6 +79,26 @@ function PharmacistGetData() {
         await contract.methods.outdateData(dataKey).send({ from: accounts[0] });
     };
 
+    const handleDrugPickedChange = (event, index) => {
+        drugsList[index].pickedUp = event.target.value;
+    };
+
+    const renderDrugsList = () => {
+        if (drugsList !== '') {
+            return drugsList.map((input, index) => (
+                <div key={index}>
+                    <input type="text" value={input.name} readOnly />
+                    {
+                        input.pickedUp === true ?
+                        (<input type="checkbox" checked={input.pickedUp} readOnly />) 
+                        :
+                        (<input type="checkbox" onChange={(event) => handleDrugPickedChange(event, index)} />)
+                    }
+                </div>
+            ));
+        }
+    };
+
     React.useEffect(() => {
         const getPastEventsFromDoc = async () => {
             const web3Accept = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
@@ -103,7 +124,7 @@ function PharmacistGetData() {
     });
 
     React.useEffect(() => {
-        if (auxReceivedData) {
+        if (auxReceivedData && auxReceivedData !== receivedData) {
             setReceivedData(auxReceivedData);
 
             const decryptorInstance = new JSEncrypt();
@@ -118,6 +139,7 @@ function PharmacistGetData() {
                     toast.success("Data successfully received!");
                     const jsonMessage = JSON.parse(decryptedPack.message);
                     setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
+                    setDrugsList(jsonMessage.drugsList);
                 } else {
                     toast.error("Message is corrupt!");
                     setReceivedData('');
@@ -131,7 +153,6 @@ function PharmacistGetData() {
 
     return (
         <div style={{display: "flex", justifyContent: "space-around"}}>
-            <h1>Pharmacist</h1>
             <div>
                 <form>
                     <div>
@@ -154,12 +175,13 @@ function PharmacistGetData() {
                         <label htmlFor='key'>Private key</label>
                         <textarea name="pk" value={privateKey} onChange={handlePrivateKey} />
                     </div>
-                    {/* <input type="submit" value="Get" /> */}
                 </form>
                 <button onClick={handleSubmit}> Get </button>
             </div>
             <div>
                 <textarea readOnly style={{ resize: "none", }} rows={20} cols={30} defaultValue={receivedData}/>
+                <label>Drugs list</label>
+                {renderDrugsList()}
                 { receivedData ? (<button onClick={handleOutdate}> Outdate </button>) : (<p></p>)}
             </div>
             <ToastContainer />

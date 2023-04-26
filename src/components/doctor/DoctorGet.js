@@ -11,6 +11,8 @@ function DoctorGetData() {
     const [consultDate, setConsultDate] = React.useState('');
     const [accountAddress, setAccountAddress] = React.useState('');
     const [privateKey, setPrivateKey] = React.useState('');
+    const [drugsList, setDrugsList] = React.useState('');
+
     
     const [receivedData, setReceivedData] = React.useState('');
     const [auxReceivedData, setAuxReceivedData] = React.useState('');
@@ -59,6 +61,17 @@ function DoctorGetData() {
             }
         }
     };
+
+    const renderDrugsList = () => {
+        if (drugsList !== '') {
+            return drugsList.map((input, index) => (
+                <div key={index}>
+                    <input type="text" value={input.name} readOnly />
+                    <input type="checkbox" checked={input.pickedUp} readOnly />
+                </div>
+            ));
+        }
+    };
     
     React.useEffect(() => {
         const getPastEventsFromDoc = async () => {
@@ -85,7 +98,7 @@ function DoctorGetData() {
     });
 
     React.useEffect(() => {
-        if (auxReceivedData) {
+        if (auxReceivedData && auxReceivedData !== receivedData) {
             setReceivedData(auxReceivedData);
 
             const decryptorInstance = new JSEncrypt();
@@ -100,6 +113,7 @@ function DoctorGetData() {
                     toast.success("Data successfully received!");
                     const jsonMessage = JSON.parse(decryptedPack.message);
                     setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
+                    setDrugsList(jsonMessage.drugsList);
                 } else {
                     toast.error("Message is corrupt!");
                     setReceivedData('');
@@ -135,12 +149,13 @@ function DoctorGetData() {
                         <label htmlFor='key'>Private key</label>
                         <textarea name="pk" value={privateKey} onChange={handlePrivateKey} />
                     </div>
-                    {/* <input type="submit" value="Get" /> */}
                 </form>
                 <button onClick={handleSubmit}> Get </button>
             </div>
             <div>
-                <textarea readOnly style={{ resize: "none", }} rows={20} cols={30} defaultValue={receivedData}/>
+                <textarea readOnly style={{ resize: "none", }} rows={10} cols={30} defaultValue={receivedData}/>
+                <label>Drugs list</label>
+                {renderDrugsList()}
             </div>
             <ToastContainer />
         </div>

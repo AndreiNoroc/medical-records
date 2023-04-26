@@ -5,13 +5,14 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 const Web3 = require("web3");
 
-function DoctorInterface() {
+function DoctorInsert() {
     const [fullName, setFullName] = React.useState('');
     const [identityNumber, setIdentityNumber] = React.useState('');
     const [consultType, setConsultType] = React.useState('');
     const [description, setDescription] = React.useState('');
     const [consultDate, setConsultDate] = React.useState('');
     const [clientPublicKey, setClientPublicKey] = React.useState('');
+    const [drugsList, setDrugsList] = React.useState([{'name': '', 'pickedUp': false}]);
 
     const handleFullName = (event) => {
         setFullName(event.target.value);
@@ -33,6 +34,34 @@ function DoctorInterface() {
         setConsultDate(event.target.value);
     };
 
+    const handleAddDrug = () => {
+        const newDrugsList = [...drugsList, {'name': '', 'pickedUp': false}];
+        setDrugsList(newDrugsList);
+    };
+
+    const handleRemoveDrug = (index) => {
+        const newDrugsList = [...drugsList];
+        newDrugsList.splice(index, 1);
+        setDrugsList(newDrugsList);
+    };
+
+    const handleDrugChange = (event, index) => {
+        const newDrugsList = [...drugsList];
+        newDrugsList[index].name = event.target.value;
+        setDrugsList(newDrugsList);
+    };
+
+    const renderDrugsList = () => {
+        return drugsList.map((input, index) => (
+          <div key={index}>
+            <input type="text" value={input.name} onChange={(event) => handleDrugChange(event, index)} />
+            {index > 0 && (
+              <button type="button" onClick={() => handleRemoveDrug(index)}>X</button>
+            )}
+          </div>
+        ));
+    };
+
     const handleclientPublicKey = (event) => {
         setClientPublicKey(event.target.value);
     };
@@ -51,21 +80,29 @@ function DoctorInterface() {
     
                 const message = {
                     'name': fullName,
-                    'description': description
+                    'description': description,
+                    'drugsList': drugsList
                 };
 
                 const stringifyMessage = JSON.stringify(message);
                 const signature = await web3.eth.personal.sign(stringifyMessage, accounts[0]);
+
+                console.log(drugsList);
 
                 const newPackage = {
                     'message': stringifyMessage,
                     'sign': signature,
                     'docAddress': accounts[0]
                 }
+
+                console.log(newPackage);
     
                 const encryptorInstance = new JSEncrypt();
                 encryptorInstance.setPublicKey(clientPublicKey);
+                console.log(JSON.stringify(newPackage));
                 const encryptedPack = encryptorInstance.encrypt(JSON.stringify(newPackage));
+
+                console.log(encryptedPack);
 
                 await contract.methods.insertData(key, encryptedPack).send({ from: accounts[0] });
 
@@ -100,15 +137,23 @@ function DoctorInterface() {
                     <label htmlFor='date'>Date</label>
                     <input type="date" id="cdate" name="cdate"  value={consultDate} onChange={handleConsultDate} />
                 </div>
+
+                <div>
+                    {renderDrugsList()}
+                    <button type="button" onClick={handleAddDrug}>Add Drug</button>
+                </div>
+
                 <div>
                     <label htmlFor='clientPublicKey'>Client Public Key</label>
                     <textarea name="clientPublicKey" value={clientPublicKey} onChange={handleclientPublicKey} />
                 </div>
             </form>
+
             <button onClick={handleSubmit}> Insert </button>
+
             <ToastContainer />
         </div>
     );
 }
 
-export default DoctorInterface;
+export default DoctorInsert;
