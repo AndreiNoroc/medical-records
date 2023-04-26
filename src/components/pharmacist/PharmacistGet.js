@@ -12,8 +12,9 @@ function PharmacistGetData() {
     const [accountAddress, setAccountAddress] = React.useState('');
     const [privateKey, setPrivateKey] = React.useState('');
     const [drugsList, setDrugsList] = React.useState('');
-    
     const [dataKey, setDataKey] = React.useState('');
+    const [auxDecryptPack, setAuxDecryptPack] = React.useState('');
+    const [clientPublicKey, setClientPublicKey] = React.useState('');
 
     const [receivedData, setReceivedData] = React.useState('');
     const [auxReceivedData, setAuxReceivedData] = React.useState('');
@@ -37,6 +38,10 @@ function PharmacistGetData() {
 
     const handlePrivateKey = (event) => {
         setPrivateKey(event.target.value);
+    };
+
+    const handleClientPublicKey = (event) => {
+        setClientPublicKey(event.target.value);
     };
 
     const handleSubmit = async () => {
@@ -67,20 +72,48 @@ function PharmacistGetData() {
     };
 
     const handleOutdate = async () => {
-        const web3 = new Web3(window.ethereum);
-                
-        await window.ethereum.request({method: 'eth_requestAccounts'});
-        const accounts = await web3.eth.getAccounts();
+        try {
+            const web3 = new Web3(window.ethereum);
+                    
+            await window.ethereum.request({method: 'eth_requestAccounts'});
+            const accounts = await web3.eth.getAccounts();
 
-        const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+            const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
 
-        console.log(accountAddress);
+            console.log(accountAddress);
 
-        await contract.methods.outdateData(dataKey).send({ from: accounts[0] });
+            const dlStringify = JSON.stringify(drugsList);
+            const dlSignature = await web3.eth.personal.sign(dlStringify, accounts[0]);
+
+            if (auxDecryptPack.drugListState !== dlStringify) {
+                const updatedPackage = {
+                    'message': auxDecryptPack.message,
+                    'sign': auxDecryptPack.docSign,
+                    'docAddress': auxDecryptPack.docAddress,
+                    'drugListState': dlStringify,
+                    'dLLastModifiedBy': accounts[0],
+                    'dLSign': dlSignature
+                }
+
+                console.log(updatedPackage);
+
+                const encryptInstance = new JSEncrypt();
+                encryptInstance.setPublicKey(clientPublicKey);
+                const encryptedData = encryptInstance.encrypt(JSON.stringify(updatedPackage));
+
+                console.log(encryptedData);
+
+                await contract.methods.updateData(dataKey, encryptedData).send({ from: accounts[0] });
+
+                toast.success("Receipt successfully updated!");
+            }
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleDrugPickedChange = (event, index) => {
-        drugsList[index].pickedUp = event.target.value;
+        drugsList[index].pickedUp = event.target.checked;
     };
 
     const renderDrugsList = () => {
@@ -135,11 +168,14 @@ function PharmacistGetData() {
 
             if (decryptedPack) {
                 const web3Browser = new Web3(window.ethereum);
-                if (web3Browser.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.clientAddress) {
+                if (web3Browser.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.clientAddress &&
+                    web3Browser.eth.accounts.recover(decryptedPack.drugListState, decryptedPack.dLSign) === decryptedPack.dLLastModifiedBy) {
                     toast.success("Data successfully received!");
+                    setAuxDecryptPack(decryptedPack);
+
                     const jsonMessage = JSON.parse(decryptedPack.message);
                     setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
-                    setDrugsList(jsonMessage.drugsList);
+                    setDrugsList(JSON.parse(decryptedPack.drugListState));
                 } else {
                     toast.error("Message is corrupt!");
                     setReceivedData('');
@@ -182,7 +218,16 @@ function PharmacistGetData() {
                 <textarea readOnly style={{ resize: "none", }} rows={20} cols={30} defaultValue={receivedData}/>
                 <label>Drugs list</label>
                 {renderDrugsList()}
-                { receivedData ? (<button onClick={handleOutdate}> Outdate </button>) : (<p></p>)}
+
+                { receivedData ? (
+                    <div>
+                        <div>
+                            <label>Public key</label>
+                            <textarea name="cpk" value={clientPublicKey} onChange={handleClientPublicKey} />
+                        </div>
+                        <button onClick={handleOutdate}> Outdate </button>
+                    </div>                    
+                ) : (<p></p>)}
             </div>
             <ToastContainer />
         </div>

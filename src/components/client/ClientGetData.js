@@ -64,13 +64,14 @@ function ClientGetData() {
                 const decryptedPack = JSON.parse(decryptorInstance.decrypt(transaction));
     
                 if (decryptedPack) {
-                    console.log(decryptedPack.docAddress);
+                    console.log(decryptedPack);
                     console.log(await web3.eth.personal.ecRecover(decryptedPack.message, decryptedPack.sign));
-                    if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAddress) {
+                    if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAddress &&
+                        web3.eth.accounts.recover(decryptedPack.drugListState, decryptedPack.dLSign) === decryptedPack.dLLastModifiedBy) {
                         console.log(decryptedPack.message);
                         const jsonMessage = JSON.parse(decryptedPack.message);
                         setClientGetResult("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
-                        setDrugsList(jsonMessage.drugsList);
+                        setDrugsList(JSON.parse(decryptedPack.drugListState));
                     } else {
                         toast.error("Message is corrupt!");
                         setClientGetResult('');
@@ -104,17 +105,24 @@ function ClientGetData() {
                 const decryptorInstance = new JSEncrypt();
                 decryptorInstance.setPrivateKey(acceptPrivateKey);
                 const decryptedPack = JSON.parse(decryptorInstance.decrypt(transaction));
+                console.log(decryptedPack);
 
                 if (decryptedPack) {
-                    if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAddress) {
+                    if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAddress &&
+                        web3.eth.accounts.recover(decryptedPack.drugListState, decryptedPack.dLSign) === decryptedPack.dLLastModifiedBy) {
                         console.log(decryptedPack);
 
                         const signature = await web3.eth.personal.sign(decryptedPack.message, accounts[0]);
-        
+
                         const newPackage = {
                             'message': decryptedPack.message,
+                            'drugListState': decryptedPack.drugListState,
+                            'docSign': decryptedPack.sign,
+                            'docAddress': decryptedPack.docAddress,
+                            'dLLastModifiedBy': decryptedPack.dLLastModifiedBy,
+                            'dLSign': decryptedPack.dLSign,
                             'sign': signature,
-                            'clientAddress': accounts[0]                
+                            'clientAddress': accounts[0]
                         };
         
                         const encryptorInstance = new JSEncrypt();
@@ -197,27 +205,6 @@ function ClientGetData() {
     
     return (
         <div style={{display: "flex", justifyContent: "space-around"}}>
-            <div>
-                <form>
-                    <div>
-                        <label htmlFor='identityNumber'>Identity Number</label>
-                        <input type="text" name="idno" value={identityNumber} onChange={handleIdentityNumber} />
-                    </div>
-                    <div>
-                        <label htmlFor='consultType'>Consult Type</label>
-                        <input type="text" name="ct" value={consultType} onChange={handleConsultType} />
-                    </div>
-                    <div>
-                        <label htmlFor='date'>Date</label>
-                        <input type="date" id="cdate" name="cdate"  value={consultDate} onChange={handleConsultDate} />
-                    </div>
-                    <div>
-                        <label htmlFor='key'>Private key</label>
-                        <textarea name="pk" value={privateKey} onChange={handlePrivateKey} />
-                    </div>
-                </form>
-                <button onClick={handleSubmit}> Get </button>
-            </div>
 
             { receivedKey ?
             (<div>
@@ -234,9 +221,33 @@ function ClientGetData() {
             :
             (
                 <div>
-                    <textarea readOnly style={{ resize: "none", }} rows={10} cols={30} defaultValue={clientGetResult} />
-                    <label>Drugs list</label>
-                    {renderDrugsList()}
+                    <div>
+                        <form>
+                            <div>
+                                <label htmlFor='identityNumber'>Identity Number</label>
+                                <input type="text" name="idno" value={identityNumber} onChange={handleIdentityNumber} />
+                            </div>
+                            <div>
+                                <label htmlFor='consultType'>Consult Type</label>
+                                <input type="text" name="ct" value={consultType} onChange={handleConsultType} />
+                            </div>
+                            <div>
+                                <label htmlFor='date'>Date</label>
+                                <input type="date" id="cdate" name="cdate"  value={consultDate} onChange={handleConsultDate} />
+                            </div>
+                            <div>
+                                <label htmlFor='key'>Private key</label>
+                                <textarea name="pk" value={privateKey} onChange={handlePrivateKey} />
+                            </div>
+                        </form>
+                        <button onClick={handleSubmit}> Get </button>
+                    </div>
+
+                    <div>
+                        <textarea readOnly style={{ resize: "none", }} rows={10} cols={30} defaultValue={clientGetResult} />
+                        <label>Drugs list</label>
+                        {renderDrugsList()}
+                    </div>
                 </div>
             )}
             <ToastContainer />

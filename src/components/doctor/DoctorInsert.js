@@ -78,21 +78,28 @@ function DoctorInsert() {
                 const preKey = identityNumber + consultDate + consultType;
                 const key = web3.utils.keccak256(web3.eth.abi.encodeParameters(["string"], [preKey]));
     
+                const dlStringify = JSON.stringify(drugsList);
+
                 const message = {
                     'name': fullName,
                     'description': description,
-                    'drugsList': drugsList
+                    'drugsList': dlStringify
                 };
 
                 const stringifyMessage = JSON.stringify(message);
                 const signature = await web3.eth.personal.sign(stringifyMessage, accounts[0]);
 
+                
+                const dlSignature = await web3.eth.personal.sign(dlStringify, accounts[0]);
                 console.log(drugsList);
 
                 const newPackage = {
                     'message': stringifyMessage,
                     'sign': signature,
-                    'docAddress': accounts[0]
+                    'docAddress': accounts[0],
+                    'drugListState': dlStringify,
+                    'dLLastModifiedBy': accounts[0],
+                    'dLSign': dlSignature
                 }
 
                 console.log(newPackage);

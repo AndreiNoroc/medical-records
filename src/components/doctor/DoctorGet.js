@@ -113,7 +113,7 @@ function DoctorGetData() {
                     toast.success("Data successfully received!");
                     const jsonMessage = JSON.parse(decryptedPack.message);
                     setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
-                    setDrugsList(jsonMessage.drugsList);
+                    setDrugsList(JSON.parse(jsonMessage.drugsList));
                 } else {
                     toast.error("Message is corrupt!");
                     setReceivedData('');

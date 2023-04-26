@@ -28,7 +28,11 @@ contract MedicalRecordsContract {
         // require(keccak256(abi.encodePacked(userData[key])) != keccak256(abi.encodePacked(content)), "Data already exists!");
 
         userData[key] = content;
-        isOutdated[key] = false;
+    }
+
+    function updateData(bytes32 key, string memory content) public {
+        require(isPharmacist[msg.sender], "Current account is not a pharmacist");
+        userData[key] = content;
     }
 
     function readData(bytes32 key) public view returns (string memory) {
