@@ -19,14 +19,10 @@ function DoctorInterface() {
 
     return (
         <div>
-            <h1>Doctor</h1>
-            <div>
-                <div>
-                    <button onClick={handleClickInsertData}> Insert data </button>
-                </div>
-                <div>
-                    <button onClick={handleClickGetData}> Get data </button>
-                </div>
+            <h1 id='docHeader'>Doctor</h1>
+            <div id='docChooseInterface'>
+                <button onClick={handleClickInsertData}> Insert data </button>
+                <button onClick={handleClickGetData}> Get data </button>
             </div>
 
             <div>

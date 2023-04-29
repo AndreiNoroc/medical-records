@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Web3 from 'web3';
 import MedicalRecordsContract from '../../artifacts/contracts/MedicalRecordsContract.sol/MedicalRecordsContract.json';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminInsert = () => {
     const [accountAddress, setAccountAddress] = useState('');
@@ -25,6 +27,8 @@ const AdminInsert = () => {
 
                 console.log(selectedOption);
                 await contract.methods.insertEntity(selectedOption, accountAddress).send({ from: accounts[0] });
+
+                toast.success("Member successfully inserted!");
             } catch (error) {
                 console.log(error);
             }
@@ -47,6 +51,7 @@ const AdminInsert = () => {
                 </select>
             </div>
             <button onClick={handleSubmit}> Insert </button>
+            <ToastContainer />
         </div>
     );
 };

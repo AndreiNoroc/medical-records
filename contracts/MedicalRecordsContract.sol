@@ -22,10 +22,8 @@ contract MedicalRecordsContract {
 
     function insertData(bytes32 key, string memory content) public {
         require(isDoctor[msg.sender], "Current account is not a doctor");
-        // console.log(userData[key]);
-        // console.log(content);
 
-        // require(keccak256(abi.encodePacked(userData[key])) != keccak256(abi.encodePacked(content)), "Data already exists!");
+        require(keccak256(abi.encodePacked(userData[key])) == keccak256(abi.encodePacked("")), "Data already exists!");
 
         userData[key] = content;
     }

@@ -1,0 +1,29 @@
+.column {
+    float: left;
+    width: 47%;
+    padding: 10px;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+#docHeader {
+    margin-left: 5%;
+}
+
+#docChooseInterface {
+    margin-bottom: 20px;
+}
+
+#docChooseInterface button {
+    height: 30px;
+    margin-inline-start: 10px;
+}
+
+form div {
+    margin-inline-start: 10px;
+    margin-bottom: 25px;
+}

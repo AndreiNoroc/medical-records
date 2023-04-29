@@ -19,10 +19,8 @@ const Home = () => {
             }
         };
     
-        // Subscribe to MetaMask account changes
         window.ethereum.on('accountsChanged', handleAccountsChanged);
     
-        // Unsubscribe from MetaMask account changes on component unmount
         return () => {
             window.ethereum.off('accountsChanged', handleAccountsChanged);
         };
@@ -30,26 +28,28 @@ const Home = () => {
 
     React.useEffect(() => {
         const getInterface = async () => {
-            const web3 = new Web3(window.ethereum);                
-            await window.ethereum.request({method: 'eth_requestAccounts'});
-            const accounts = await web3.eth.getAccounts();
+            if (window.ethereum) {
+                const web3 = new Web3(window.ethereum);                
+                await window.ethereum.request({method: 'eth_requestAccounts'});
+                const accounts = await web3.eth.getAccounts();
 
-            const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+                const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
 
-            const transaction = await contract.methods.isEntity(accounts[0]).call({ from: accounts[0] });
+                const transaction = await contract.methods.isEntity(accounts[0]).call({ from: accounts[0] });
 
-            console.log(transaction);
+                console.log(transaction);
 
-            if (transaction === "doctor") {
-                setIsInterface(<DoctorInterface/>);
-            } else if (transaction === "client") {
-                setIsInterface(<ClientInterface/>);
-            } else if (transaction === "pharmacist") {
-                setIsInterface(<PharmacistInterface/>);
-            } else if (transaction === "admin") {
-                setIsInterface(<AdminInterface/>);
-            } else {
-                setIsInterface(<p> Please use a registered account </p>);
+                if (transaction === "doctor") {
+                    setIsInterface(<DoctorInterface/>);
+                } else if (transaction === "client") {
+                    setIsInterface(<ClientInterface/>);
+                } else if (transaction === "pharmacist") {
+                    setIsInterface(<PharmacistInterface/>);
+                } else if (transaction === "admin") {
+                    setIsInterface(<AdminInterface/>);
+                } else {
+                    setIsInterface(<p> Please use a registered account </p>);
+                }
             }
         };
 
@@ -58,7 +58,8 @@ const Home = () => {
 
     return (
         <div>
-            <h1>Home</h1>
+            <h1 id="appheader">FutureMed</h1>
+            <hr></hr>
             <div>
                 { isInterface }
             </div>

@@ -1,3 +1,4 @@
+import "./Doctor.css";
 import React from 'react';
 import MedicalRecordsContract from '../../artifacts/contracts/MedicalRecordsContract.sol/MedicalRecordsContract.json';
 import { ToastContainer, toast } from 'react-toastify';
@@ -54,7 +55,7 @@ function DoctorGetData() {
                 const key = web3.utils.keccak256(web3.eth.abi.encodeParameters(["string"], [preKey]));
 
                 const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
-
+                toast.success("The request has been successfully sent!");
                 console.log(await transaction);
             } catch(error) {
                 console.log(error);
@@ -126,8 +127,8 @@ function DoctorGetData() {
     }, [receivedLogId]);
 
     return (
-        <div style={{display: "flex", justifyContent: "space-around"}}>
-            <div>
+        <div className='row'>
+            <div className='column'>
                 <form>
                     <div>
                         <label htmlFor='accountAddress'>Account Address</label>
@@ -152,9 +153,10 @@ function DoctorGetData() {
                 </form>
                 <button onClick={handleSubmit}> Get </button>
             </div>
-            <div>
+            <div className='column'>
                 <textarea readOnly style={{ resize: "none", }} rows={10} cols={30} defaultValue={receivedData}/>
-                <label>Drugs list</label>
+                
+                {drugsList ? (<label>Drugs list</label>):(<p>No drugs list was provided! </p>)}
                 {renderDrugsList()}
             </div>
             <ToastContainer />

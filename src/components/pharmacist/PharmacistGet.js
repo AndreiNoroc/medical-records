@@ -59,12 +59,16 @@ function PharmacistGetData() {
                 const preKey = identityNumber + consultDate + consultType;
                 const key = web3.utils.keccak256(web3.eth.abi.encodeParameters(["string"], [preKey]));
 
-                const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
+                const isOutdate = await contract.methods.isKeyOutdated(key).call({ from: accounts[0] });
 
-                // trebuie facute verificari
-                setDataKey(key);
-
-                console.log(await transaction);
+                if (isOutdate) {
+                    toast.info("Prescription is outdated!");
+                } else {
+                    const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
+                    console.log(await transaction);
+                    toast.success("The request has been successfully sent!");
+                    setDataKey(key);
+                }
             } catch(error) {
                 console.log(error);
             }
@@ -103,8 +107,19 @@ function PharmacistGetData() {
 
                 console.log(encryptedData);
 
-                await contract.methods.updateData(dataKey, encryptedData).send({ from: accounts[0] });
+                let idx = 0;
+                for (idx = 0 ; idx < drugsList.length; idx++) {
+                    if (drugsList[idx].pickedUp == false) {
+                        idx = -1;
+                        break;
+                    }
+                }
 
+                if (idx == drugsList.length) {
+                    await contract.methods.outdateData(dataKey).send({ from: accounts[0] });
+                }
+
+                await contract.methods.updateData(dataKey, encryptedData).send({ from: accounts[0] });
                 toast.success("Receipt successfully updated!");
             }
         } catch (error) {
