@@ -1,4 +1,3 @@
-import "./Doctor.css";
 import React from 'react';
 import MedicalRecordsContract from '../../artifacts/contracts/MedicalRecordsContract.sol/MedicalRecordsContract.json';
 import { ToastContainer, toast } from 'react-toastify';
@@ -8,12 +7,30 @@ const Web3 = require("web3");
 
 function DoctorGetData() {
     const [identityNumber, setIdentityNumber] = React.useState('');
+    const [errorID, setErrorID] = React.useState('');
+    const [outlineID, setOutlineID] = React.useState({outline: 'none'});
+
     const [consultType, setConsultType] = React.useState('');
+    const [errorCT, setErrorCT] = React.useState('');
+    const [outlineCT, setOutlineCT] = React.useState({outline: 'none'});
+
     const [consultDate, setConsultDate] = React.useState('');
+    const [errorDate, setErrorDate] = React.useState('');
+    const [outlineDate, setOutlineDate] = React.useState({outline: 'none'});
+
     const [accountAddress, setAccountAddress] = React.useState('');
+    const [errorAccountAddress, setErrorAccountAddress] = React.useState('');
+    const [outlineAccountAddress, setOutlineAccountAddress] = React.useState({outline: 'none'});
+
     const [privateKey, setPrivateKey] = React.useState('');
+    const [errorPrivateKey, setErrorPrivateKey] = React.useState('');
+    const [outlinePrivateKey, setOutlinePrivateKey] = React.useState({outline: 'none'});
+
     const [drugsList, setDrugsList] = React.useState('');
 
+    const lettersAndSpacesOnly = /^[A-Za-z ]+$/;
+    const digitsOnly = /^\d*$/;
+    const keyCharacters = /^[a-zA-Z0-9\s\-+=/]+$/;
     
     const [receivedData, setReceivedData] = React.useState('');
     const [auxReceivedData, setAuxReceivedData] = React.useState('');
@@ -39,129 +56,309 @@ function DoctorGetData() {
         setPrivateKey(event.target.value);
     };
 
+    const checkFields = () => {
+        let ok = true;
+        
+        if (accountAddress) {
+            if (accountAddress.length !== 42) {
+                setErrorAccountAddress('The account address length may be 42!');
+                setOutlineAccountAddress({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                setErrorAccountAddress('');
+                setOutlineAccountAddress({
+                    outline: 'none',
+                });
+                ok = ok && true;
+            }
+        } else {
+            setErrorAccountAddress('This field may not be blank!');
+            setOutlineAccountAddress({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (identityNumber) {
+            if (!digitsOnly.test(identityNumber)) {
+                setErrorID('This field may contain only digits!');
+                setOutlineID({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                if (identityNumber.length !== 13) {
+                    setErrorID('The identity length may be 13!');
+                    setOutlineID({
+                        outline: 'red solid 1px',
+                    });
+                    ok = false;
+                } else {
+                    setErrorID('');
+                    setOutlineID({
+                        outline: 'none',
+                    });
+                    ok = ok && true;
+                }
+            }
+        } else {
+            setErrorID('This field may not be blank!');
+            setOutlineID({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (consultType) {
+            if (!lettersAndSpacesOnly.test(consultType)) {
+                setErrorCT('This field may contain only letters and spaces!');
+                setOutlineCT({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                setErrorCT('');
+                setOutlineCT({
+                    outline: 'none',
+                });
+                ok = ok && true;
+            }
+        } else {
+            setErrorCT('This field may not be blank!');
+            setOutlineCT({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (consultDate) {
+            setErrorDate('');
+            setOutlineDate({
+                outline: 'none',
+            });
+            ok = ok && true;
+        } else {
+            setErrorDate('Data may be selected!');
+            setOutlineDate({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (privateKey) {
+            if (!keyCharacters.test(privateKey)) {
+                setErrorPrivateKey('This field may contain only letters, digits, spaces, -, +, / and = !');
+                setOutlinePrivateKey({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                setErrorPrivateKey('');
+                setOutlinePrivateKey({
+                    outline: 'none',
+                });
+                ok = ok && true;
+            }
+        } else {
+            setErrorPrivateKey('This field may not be blank!');
+            setOutlinePrivateKey({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        return ok;
+    }
+
     const handleSubmit = async () => {
-        if (window.ethereum) {
             try {
-                const web3 = new Web3(window.ethereum);
-                
-                await window.ethereum.request({method: 'eth_requestAccounts'});
-                const accounts = await web3.eth.getAccounts();
+                if (checkFields() && window.ethereum) {
+                    const web3 = new Web3(window.ethereum);
+                    
+                    await window.ethereum.request({method: 'eth_requestAccounts'});
+                    const accounts = await web3.eth.getAccounts();
 
-                const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+                    const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
 
-                console.log(accountAddress);
+                    console.log(accountAddress);
 
-                const preKey = identityNumber + consultDate + consultType;
-                const key = web3.utils.keccak256(web3.eth.abi.encodeParameters(["string"], [preKey]));
+                    const preKey = identityNumber + consultDate + consultType;
+                    const key = web3.utils.keccak256(web3.eth.abi.encodeParameters(["string"], [preKey]));
 
-                const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
-                toast.success("The request has been successfully sent!");
-                console.log(await transaction);
+                    const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
+                    toast.success("The request has been successfully sent!");
+                    console.log(await transaction);
+                }
             } catch(error) {
                 console.log(error);
             }
-        }
     };
 
     const renderDrugsList = () => {
-        if (drugsList !== '') {
-            return drugsList.map((input, index) => (
-                <div key={index}>
-                    <input type="text" value={input.name} readOnly />
-                    <input type="checkbox" checked={input.pickedUp} readOnly />
-                </div>
-            ));
+        try {
+            if (drugsList !== '') {
+                return drugsList.map((input, index) => (
+                    <div key={index}>
+                        <input type="text" value={input.name} readOnly />
+                        <input type="checkbox" checked={input.pickedUp} readOnly />
+                    </div>
+                ));
+            }
+        } catch (error) {
+            console.log(error);
         }
     };
     
     React.useEffect(() => {
-        const getPastEventsFromDoc = async () => {
-            const web3Accept = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
-            const web3Browser = new Web3(window.ethereum);
-            const contractAccept = new web3Accept.eth.Contract(MedicalRecordsContract.abi, web3Accept.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+        try {
+            const getPastEventsFromDoc = async () => {
+                const web3Accept = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
+                const web3Browser = new Web3(window.ethereum);
+                const contractAccept = new web3Accept.eth.Contract(MedicalRecordsContract.abi, web3Accept.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
 
-            await window.ethereum.request({method: 'eth_requestAccounts'});
-            const accounts =  await web3Browser.eth.getAccounts();
-    
-            const options = {
-                filter: {_to: accounts[0]},
-                fromBlock: 'latest'
+                await window.ethereum.request({method: 'eth_requestAccounts'});
+                const accounts =  await web3Browser.eth.getAccounts();
+        
+                const options = {
+                    filter: {_to: accounts[0]},
+                    fromBlock: 'latest'
+                };
+        
+                contractAccept.once('SendResponse', options, function(error, event) {
+                    console.log(event);
+                    setReceivedLogId(event.id);
+                    setAuxReceivedData(event.returnValues._value);
+                });
             };
-    
-            contractAccept.once('SendResponse', options, function(error, event) {
-                console.log(event);
-                setReceivedLogId(event.id);
-                setAuxReceivedData(event.returnValues._value);
-            });
-        };
 
-        getPastEventsFromDoc();
+            getPastEventsFromDoc();
+        } catch(error) {
+            console.log(error);
+        }
     });
 
     React.useEffect(() => {
-        if (auxReceivedData && auxReceivedData !== receivedData) {
-            setReceivedData(auxReceivedData);
+        try {
+            if (auxReceivedData && auxReceivedData !== receivedData) {
+                setReceivedData(auxReceivedData);
 
-            const decryptorInstance = new JSEncrypt();
-            decryptorInstance.setPrivateKey(privateKey);
-            const decryptedPack = JSON.parse(decryptorInstance.decrypt(auxReceivedData));
+                const decryptorInstance = new JSEncrypt();
+                decryptorInstance.setPrivateKey(privateKey);
+                const decryptedPack = JSON.parse(decryptorInstance.decrypt(auxReceivedData));
 
-            console.log(decryptedPack);
+                console.log(decryptedPack);
 
-            if (decryptedPack) {
-                const web3Browser = new Web3(window.ethereum);
-                if (web3Browser.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.clientAddress) {
-                    toast.success("Data successfully received!");
-                    const jsonMessage = JSON.parse(decryptedPack.message);
-                    setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
-                    setDrugsList(JSON.parse(jsonMessage.drugsList));
+                if (decryptedPack) {
+                    const web3Browser = new Web3(window.ethereum);
+                    if (web3Browser.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.clientAddress) {
+                        if (decryptedPack.message === "Request declined!") {
+                            toast.info("Request declined!");
+                            setReceivedData('');
+                            setDrugsList('');
+                        } else {
+                            toast.success("Data successfully received!");
+                            const jsonMessage = JSON.parse(decryptedPack.message);
+                            setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
+                            setDrugsList(JSON.parse(decryptedPack.drugListState));
+                        }
+                    } else {
+                        toast.error("Message is corrupt!");
+                        setReceivedData('');
+                        setDrugsList('');
+                    }
                 } else {
-                    toast.error("Message is corrupt!");
+                    toast.error("Data does not exist!");
                     setReceivedData('');
+                    setDrugsList('');
                 }
-            } else {
-                toast.error("Data does not exist!");
-                setReceivedData('');
+
+                setAccountAddress('');
+                setIdentityNumber('');
+                setConsultType('');
+                setConsultDate('');
+                setPrivateKey('');
             }
+        } catch(error) {
+            console.log(error);
         }
     }, [receivedLogId]);
 
-    return (
-        <div className='row'>
-            <div className='column'>
-                <form>
-                    <div>
+    try {
+        return (
+            <div className='row'>
+                <div className='column'>
+                    <h2>Provide patient data</h2>
+                    <div className='formInfo'>
                         <label htmlFor='accountAddress'>Account Address</label>
-                        <input type="text" name="acadd" value={accountAddress} onChange={handleAccountAddress} />
-                    </div>
-                    <div>
+                        <input type="text"
+                            name="acadd"
+                            maxLength={42}
+                            placeholder="e.g. 0x31234321..."
+                            value={accountAddress}
+                            onChange={handleAccountAddress}
+                            style={outlineAccountAddress} />
+                        {errorAccountAddress && <p className='pColor'>{errorAccountAddress}</p>}
+
                         <label htmlFor='identityNumber'>Identity Number</label>
-                        <input type="text" name="idno" value={identityNumber} onChange={handleIdentityNumber} />
-                    </div>
-                    <div>
+                        <input type="text"
+                            name="idno"
+                            maxLength={13}
+                            placeholder="e.g. 1234567891012"
+                            value={identityNumber}
+                            onChange={handleIdentityNumber}
+                            style={outlineID} />
+                        {errorID && <p className='pColor'>{errorID}</p>}
+
                         <label htmlFor='consultType'>Consult Type</label>
-                        <input type="text" name="ct" value={consultType} onChange={handleConsultType} />
-                    </div>
-                    <div>
+                        <input type="text"
+                            name="ct"
+                            maxLength="20"
+                            placeholder="e.g. cardiac control"
+                            value={consultType}
+                            onChange={handleConsultType}
+                            style={outlineCT} />
+                        {errorCT && <p className='pColor'>{errorCT}</p>}
+
                         <label htmlFor='date'>Date</label>
-                        <input type="date" id="cdate" name="cdate"  value={consultDate} onChange={handleConsultDate} />
+                        <input type="date"
+                            id="cdate"
+                            name="cdate"
+                            value={consultDate}
+                            onChange={handleConsultDate}
+                            style={outlineDate} />
+                        {errorDate && <p className='pColor'>{errorDate}</p>}
+
+                        <label htmlFor='key'>Private doctor key</label>
+                        <textarea name="pk"
+                            value={privateKey}
+                            onChange={handlePrivateKey}
+                            rows={10}
+                            placeholder='e.g -----BEGIN RSA PRIVATE KEY-----
+                                            MIIWqAIBAAKCBQE...
+                                            -----END RSA PRIVATE KEY-----'
+                            style={outlinePrivateKey} />
+                        {errorPrivateKey && <p className='pColor'>{errorPrivateKey}</p>}
+
+                        <button onClick={handleSubmit}> Get </button>
                     </div>
-                    <div>
-                        <label htmlFor='key'>Private key</label>
-                        <textarea name="pk" value={privateKey} onChange={handlePrivateKey} />
+                </div>
+                <div className='column'>
+                    <h2>Extracted data</h2>
+                    <div className='formInfo'>
+                        <textarea id='resultText' readOnly rows={10} cols={30} defaultValue={receivedData}/>                        
+                        {drugsList ? (<label>Drugs list</label>):(<p>No drugs list was provided! </p>)}
+                        {renderDrugsList()}
                     </div>
-                </form>
-                <button onClick={handleSubmit}> Get </button>
+                </div>
+                <ToastContainer />
             </div>
-            <div className='column'>
-                <textarea readOnly style={{ resize: "none", }} rows={10} cols={30} defaultValue={receivedData}/>
-                
-                {drugsList ? (<label>Drugs list</label>):(<p>No drugs list was provided! </p>)}
-                {renderDrugsList()}
-            </div>
-            <ToastContainer />
-        </div>
-    );
+        );
+    } catch(error) {
+        console.log(error);
+        return null;
+    }
 }
 
 export default DoctorGetData;

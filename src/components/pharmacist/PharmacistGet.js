@@ -7,18 +7,40 @@ const Web3 = require("web3");
 
 function PharmacistGetData() {
     const [identityNumber, setIdentityNumber] = React.useState('');
+    const [errorID, setErrorID] = React.useState('');
+    const [outlineID, setOutlineID] = React.useState({outline: 'none'});
+
     const [consultType, setConsultType] = React.useState('');
+    const [errorCT, setErrorCT] = React.useState('');
+    const [outlineCT, setOutlineCT] = React.useState({outline: 'none'});
+
     const [consultDate, setConsultDate] = React.useState('');
+    const [errorDate, setErrorDate] = React.useState('');
+    const [outlineDate, setOutlineDate] = React.useState({outline: 'none'});
+
     const [accountAddress, setAccountAddress] = React.useState('');
+    const [errorAccountAddress, setErrorAccountAddress] = React.useState('');
+    const [outlineAccountAddress, setOutlineAccountAddress] = React.useState({outline: 'none'});
+
     const [privateKey, setPrivateKey] = React.useState('');
+    const [errorPrivateKey, setErrorPrivateKey] = React.useState('');
+    const [outlinePrivateKey, setOutlinePrivateKey] = React.useState({outline: 'none'});
+
     const [drugsList, setDrugsList] = React.useState('');
     const [dataKey, setDataKey] = React.useState('');
     const [auxDecryptPack, setAuxDecryptPack] = React.useState('');
+
     const [clientPublicKey, setClientPublicKey] = React.useState('');
+    const [errorClientPublicKey, setErrorPublicKey] = React.useState('');
+    const [outlineClientPublicKey, setOutlineClientPublicKey] = React.useState({outline: 'none'});
 
     const [receivedData, setReceivedData] = React.useState('');
     const [auxReceivedData, setAuxReceivedData] = React.useState('');
     const [receivedLogId, setReceivedLogId] = React.useState('');
+
+    const lettersAndSpacesOnly = /^[A-Za-z ]+$/;
+    const digitsOnly = /^\d*$/;
+    const keyCharacters = /^[a-zA-Z0-9\s\-+=/]+$/;
 
     const handleIdentityNumber = (event) => {
         setIdentityNumber(event.target.value);
@@ -44,8 +66,124 @@ function PharmacistGetData() {
         setClientPublicKey(event.target.value);
     };
 
+    const checkFields = () => {
+        let ok = true;
+        
+        if (accountAddress) {
+            if (accountAddress.length !== 42) {
+                setErrorAccountAddress('The account address length may be 42!');
+                setOutlineAccountAddress({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                setErrorAccountAddress('');
+                setOutlineAccountAddress({
+                    outline: 'none',
+                });
+                ok = ok && true;
+            }
+        } else {
+            setErrorAccountAddress('This field may not be blank!');
+            setOutlineAccountAddress({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (identityNumber) {
+            if (!digitsOnly.test(identityNumber)) {
+                setErrorID('This field may contain only digits!');
+                setOutlineID({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                if (identityNumber.length !== 13) {
+                    setErrorID('The identity length may be 13!');
+                    setOutlineID({
+                        outline: 'red solid 1px',
+                    });
+                    ok = false;
+                } else {
+                    setErrorID('');
+                    setOutlineID({
+                        outline: 'none',
+                    });
+                    ok = ok && true;
+                }
+            }
+        } else {
+            setErrorID('This field may not be blank!');
+            setOutlineID({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (consultType) {
+            if (!lettersAndSpacesOnly.test(consultType)) {
+                setErrorCT('This field may contain only letters and spaces!');
+                setOutlineCT({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                setErrorCT('');
+                setOutlineCT({
+                    outline: 'none',
+                });
+                ok = ok && true;
+            }
+        } else {
+            setErrorCT('This field may not be blank!');
+            setOutlineCT({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (consultDate) {
+            setErrorDate('');
+            setOutlineDate({
+                outline: 'none',
+            });
+            ok = ok && true;
+        } else {
+            setErrorDate('Data may be selected!');
+            setOutlineDate({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        if (privateKey) {
+            if (!keyCharacters.test(privateKey)) {
+                setErrorPrivateKey('This field may contain only letters, digits, spaces, -, +, / and = !');
+                setOutlinePrivateKey({
+                    outline: 'red solid 1px',
+                });
+                ok = false;
+            } else {
+                setErrorPrivateKey('');
+                setOutlinePrivateKey({
+                    outline: 'none',
+                });
+                ok = ok && true;
+            }
+        } else {
+            setErrorPrivateKey('This field may not be blank!');
+            setOutlinePrivateKey({
+                outline: 'red solid 1px',
+            });
+            ok = false;
+        }
+
+        return ok;
+    }
+
     const handleSubmit = async () => {
-        if (window.ethereum) {
+        if (checkFields() && window.ethereum) {
             try {
                 const web3 = new Web3(window.ethereum);
                 
@@ -63,6 +201,12 @@ function PharmacistGetData() {
 
                 if (isOutdate) {
                     toast.info("Prescription is outdated!");
+
+                    setAccountAddress('');
+                    setIdentityNumber('');
+                    setConsultType('');
+                    setConsultDate('');
+                    setPrivateKey('');
                 } else {
                     const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
                     console.log(await transaction);
@@ -109,18 +253,22 @@ function PharmacistGetData() {
 
                 let idx = 0;
                 for (idx = 0 ; idx < drugsList.length; idx++) {
-                    if (drugsList[idx].pickedUp == false) {
+                    if (drugsList[idx].pickedUp === false) {
                         idx = -1;
                         break;
                     }
                 }
 
-                if (idx == drugsList.length) {
+                if (idx === drugsList.length) {
                     await contract.methods.outdateData(dataKey).send({ from: accounts[0] });
                 }
 
                 await contract.methods.updateData(dataKey, encryptedData).send({ from: accounts[0] });
                 toast.success("Receipt successfully updated!");
+
+                setReceivedData('');
+                setDrugsList('');
+                setClientPublicKey('');
             }
         } catch (error) {
             console.log(error);
@@ -132,121 +280,191 @@ function PharmacistGetData() {
     };
 
     const renderDrugsList = () => {
-        if (drugsList !== '') {
-            return drugsList.map((input, index) => (
-                <div key={index}>
-                    <input type="text" value={input.name} readOnly />
-                    {
-                        input.pickedUp === true ?
-                        (<input type="checkbox" checked={input.pickedUp} readOnly />) 
-                        :
-                        (<input type="checkbox" onChange={(event) => handleDrugPickedChange(event, index)} />)
-                    }
-                </div>
-            ));
+        try {
+            if (drugsList !== '') {
+                return drugsList.map((input, index) => (
+                    <div key={index}>
+                        <input type="text" value={input.name} readOnly />
+                        {
+                            input.pickedUp === true ?
+                            (<input type="checkbox" checked={input.pickedUp} readOnly />) 
+                            :
+                            (<input type="checkbox" onChange={(event) => handleDrugPickedChange(event, index)} />)
+                        }
+                    </div>
+                ));
+            }
+        } catch (error) {
+            console.log(error);
         }
     };
 
     React.useEffect(() => {
-        const getPastEventsFromDoc = async () => {
-            const web3Accept = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
-            const web3Browser = new Web3(window.ethereum);
-            const contractAccept = new web3Accept.eth.Contract(MedicalRecordsContract.abi, web3Accept.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+        try {
+            const getPastEventsFromDoc = async () => {
+                const web3Accept = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
+                const web3Browser = new Web3(window.ethereum);
+                const contractAccept = new web3Accept.eth.Contract(MedicalRecordsContract.abi, web3Accept.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
 
-            await window.ethereum.request({method: 'eth_requestAccounts'});
-            const accounts =  await web3Browser.eth.getAccounts();
-    
-            const options = {
-                filter: {_to: accounts[0]},
-                fromBlock: 'latest'
+                await window.ethereum.request({method: 'eth_requestAccounts'});
+                const accounts =  await web3Browser.eth.getAccounts();
+        
+                const options = {
+                    filter: {_to: accounts[0]},
+                    fromBlock: 'latest'
+                };
+        
+                contractAccept.once('SendResponse', options, function(error, event) {
+                    console.log(event);
+                    setReceivedLogId(event.id);
+                    setAuxReceivedData(event.returnValues._value);
+                });
             };
-    
-            contractAccept.once('SendResponse', options, function(error, event) {
-                console.log(event);
-                setReceivedLogId(event.id);
-                setAuxReceivedData(event.returnValues._value);
-            });
-        };
 
-        getPastEventsFromDoc();
+            getPastEventsFromDoc();
+        } catch (error) {
+            console.log(error);
+        }
     });
 
     React.useEffect(() => {
-        if (auxReceivedData && auxReceivedData !== receivedData) {
-            setReceivedData(auxReceivedData);
+        try {
+            if (auxReceivedData && auxReceivedData !== receivedData) {
+                setReceivedData(auxReceivedData);
 
-            const decryptorInstance = new JSEncrypt();
-            decryptorInstance.setPrivateKey(privateKey);
-            const decryptedPack = JSON.parse(decryptorInstance.decrypt(auxReceivedData));
+                const decryptorInstance = new JSEncrypt();
+                decryptorInstance.setPrivateKey(privateKey);
+                const decryptedPack = JSON.parse(decryptorInstance.decrypt(auxReceivedData));
 
-            console.log(decryptedPack);
+                console.log(decryptedPack);
 
-            if (decryptedPack) {
-                const web3Browser = new Web3(window.ethereum);
-                if (web3Browser.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.clientAddress &&
-                    web3Browser.eth.accounts.recover(decryptedPack.drugListState, decryptedPack.dLSign) === decryptedPack.dLLastModifiedBy) {
-                    toast.success("Data successfully received!");
-                    setAuxDecryptPack(decryptedPack);
+                if (decryptedPack) {
+                    const web3Browser = new Web3(window.ethereum);
+                    if (web3Browser.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.clientAddress) {
+                        if (decryptedPack.message === "Request declined!") { 
+                            toast.info("Request declined!");
+                            setReceivedData('');
+                            setDrugsList('');
+                        } else {
+                            if(web3Browser.eth.accounts.recover(decryptedPack.drugListState, decryptedPack.dLSign) === decryptedPack.dLLastModifiedBy) {
+                                toast.success("Data successfully received!");
+                                setAuxDecryptPack(decryptedPack);
 
-                    const jsonMessage = JSON.parse(decryptedPack.message);
-                    setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
-                    setDrugsList(JSON.parse(decryptedPack.drugListState));
+                                const jsonMessage = JSON.parse(decryptedPack.message);
+                                setReceivedData("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
+                                setDrugsList(JSON.parse(decryptedPack.drugListState));
+                            } else {
+                                toast.error("Message is corrupt!");
+                                setReceivedData('');
+                            }
+                        }
+                    } else {
+                        toast.error("Message is corrupt!");
+                        setReceivedData('');
+                    }
                 } else {
-                    toast.error("Message is corrupt!");
+                    toast.error("Data does not exist!");
                     setReceivedData('');
                 }
-            } else {
-                toast.error("Data does not exist!");
-                setReceivedData('');
+
+                setAccountAddress('');
+                setIdentityNumber('');
+                setConsultType('');
+                setConsultDate('');
+                setPrivateKey('');
             }
+        } catch(error) {
+            console.log(error);
         }
     }, [receivedLogId]);
 
+    try {
     return (
-        <div style={{display: "flex", justifyContent: "space-around"}}>
-            <div>
-                <form>
-                    <div>
-                        <label htmlFor='accountAddress'>Account Address</label>
-                        <input type="text" name="acadd" value={accountAddress} onChange={handleAccountAddress} />
-                    </div>
-                    <div>
-                        <label htmlFor='identityNumber'>Identity Number</label>
-                        <input type="text" name="idno" value={identityNumber} onChange={handleIdentityNumber} />
-                    </div>
-                    <div>
-                        <label htmlFor='consultType'>Consult Type</label>
-                        <input type="text" name="ct" value={consultType} onChange={handleConsultType} />
-                    </div>
-                    <div>
-                        <label htmlFor='date'>Date</label>
-                        <input type="date" id="cdate" name="cdate"  value={consultDate} onChange={handleConsultDate} />
-                    </div>
-                    <div>
-                        <label htmlFor='key'>Private key</label>
-                        <textarea name="pk" value={privateKey} onChange={handlePrivateKey} />
-                    </div>
-                </form>
-                <button onClick={handleSubmit}> Get </button>
+        <div className='row'>
+            <div className='column'>
+                <div className='formInfo'>
+                    <label htmlFor='accountAddress'>Account Address</label>
+                    <input type="text"
+                        name="acadd"
+                        maxLength={42}
+                        placeholder="e.g. 0x31234321..."
+                        value={accountAddress}
+                        onChange={handleAccountAddress}
+                        style={outlineAccountAddress} />
+                    {errorAccountAddress && <p className='pColor'>{errorAccountAddress}</p>}
+                    
+                    <label htmlFor='identityNumber'>Identity Number</label>
+                    <input type="text"
+                        name="idno"
+                        maxLength={13}
+                        placeholder="e.g. 1234567891012"
+                        value={identityNumber}
+                        onChange={handleIdentityNumber}
+                        style={outlineID} />
+                    {errorID && <p className='pColor'>{errorID}</p>}
+                    
+                    <label htmlFor='consultType'>Consult Type</label>
+                    <input type="text"
+                        name="ct"
+                        maxLength="20"
+                        placeholder="e.g. cardiac control"
+                        value={consultType}
+                        onChange={handleConsultType}
+                        style={outlineCT} />
+                    {errorCT && <p className='pColor'>{errorCT}</p>}
+                    
+                    <label htmlFor='date'>Date</label>
+                    <input type="date"
+                        id="cdate"
+                        name="cdate"
+                        value={consultDate}
+                        onChange={handleConsultDate}
+                        style={outlineDate} />
+                    {errorDate && <p className='pColor'>{errorDate}</p>}
+                    
+                    <label htmlFor='key'>Private pharmacist key</label>
+                    <textarea name="pk"
+                        value={privateKey}
+                        onChange={handlePrivateKey}
+                        rows={10}
+                        placeholder='e.g -----BEGIN RSA PRIVATE KEY-----
+                                        MIIWqAIBAAKCBQE...
+                                        -----END RSA PRIVATE KEY-----'
+                        style={outlinePrivateKey} />
+                    {errorPrivateKey && <p className='pColor'>{errorPrivateKey}</p>}
+                    
+                    <button onClick={handleSubmit}> Get </button>
+                </div>
             </div>
-            <div>
-                <textarea readOnly style={{ resize: "none", }} rows={20} cols={30} defaultValue={receivedData}/>
-                <label>Drugs list</label>
-                {renderDrugsList()}
-
-                { receivedData ? (
-                    <div>
+            <div className='column'>
+                <div className='formInfo'>
+                    <textarea id='resultText' readOnly rows={10} cols={30} defaultValue={receivedData}/>
+                    {drugsList ? (<label>Drugs list</label>):(<p>No drugs list was provided! </p>)}
+                    {renderDrugsList()}
+                    { receivedData ? (
                         <div>
-                            <label>Public key</label>
-                            <textarea name="cpk" value={clientPublicKey} onChange={handleClientPublicKey} />
-                        </div>
-                        <button onClick={handleOutdate}> Outdate </button>
-                    </div>                    
-                ) : (<p></p>)}
+                            <label>Public client key</label>
+                            <textarea name="cpk"
+                                rows={10}
+                                placeholder='e.g -----BEGIN PUBLIC KEY-----
+                                            MIIWqAIBAAKC...
+                                            -----END PUBLIC KEY-----'
+                                value={clientPublicKey}
+                                onChange={handleClientPublicKey}
+                                style={outlineClientPublicKey} />
+                            {errorClientPublicKey && <p className='pColor'>{errorClientPublicKey}</p>}
+                            <button onClick={handleOutdate}> Outdate </button>
+                        </div>                    
+                    ) : (<p></p>)}
+                </div>
             </div>
             <ToastContainer />
         </div>
     );
+    } catch(error) {
+        console.log(error);
+        return null;
+    }
 }
 
 export default PharmacistGetData;

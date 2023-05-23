@@ -27,3 +27,4 @@ package-lock.json
 /cache
 /typechain-types
 /src/artifacts
+gas-reporter.txt

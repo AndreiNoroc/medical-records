@@ -1,0 +1,11 @@
+#appheader {
+    background-color: #F08080;
+    align-items: center;
+    display: flex;
+    height: 80px;
+    width: 100%;
+}
+
+h1 {
+    margin-left: 5%;
+}

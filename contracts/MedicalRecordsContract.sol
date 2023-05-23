@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
-import "hardhat/console.sol";
 
 contract MedicalRecordsContract {
     mapping (bytes32 => string) private userData;
@@ -21,23 +20,24 @@ contract MedicalRecordsContract {
     fallback() external payable {}
 
     function insertData(bytes32 key, string memory content) public {
-        require(isDoctor[msg.sender], "Current account is not a doctor");
-
+        require(isDoctor[msg.sender], "Current account is not a doctor!");
         require(keccak256(abi.encodePacked(userData[key])) == keccak256(abi.encodePacked("")), "Data already exists!");
 
         userData[key] = content;
     }
 
     function updateData(bytes32 key, string memory content) public {
-        require(isPharmacist[msg.sender], "Current account is not a pharmacist");
+        require(isPharmacist[msg.sender], "Current account is not a pharmacist!");
         userData[key] = content;
     }
 
     function readData(bytes32 key) public view returns (string memory) {
+        require(isClient[msg.sender], "Current account is not a client!");
         return userData[key];
     }
 
     function outdateData(bytes32 key) public {
+        require(isPharmacist[msg.sender], "Only pharmacists can outdate a prescription!");
         isOutdated[key] = true;
     }
 
@@ -46,34 +46,39 @@ contract MedicalRecordsContract {
     }
 
     function requestDataFromClient(address _to, string memory _value) public {
+        require(isDoctor[msg.sender] || isPharmacist[msg.sender], "Only doctors and pharmacists can request data!");
         emit RequestDataTransaction(msg.sender, _to, _value);
     }
 
     function sendResponse(address _to, string memory _value) public {
+        require(isClient[msg.sender], "Only clients can send response!");
         emit SendResponse(msg.sender, _to, _value);
     }
 
-    function insertEntity(string memory _entity , address _who) public {
-        if (keccak256(abi.encodePacked(_entity)) == keccak256(abi.encodePacked("doctor"))) {
+    function insertEntity(bytes32 _entity , address _who) public {
+        require(isAdmin[msg.sender], "This account is not an admin!");
+        require(!isDoctor[_who] && !isClient[_who] && !isPharmacist[_who] && !isAdmin[_who], "Account has already been registered!");
+
+        if (_entity == keccak256(abi.encodePacked("doctor"))) {
             isDoctor[_who] = true;
-        } else if (keccak256(abi.encodePacked(_entity)) == keccak256(abi.encodePacked("client"))) {
+        } else if (_entity == keccak256(abi.encodePacked("client"))) {
             isClient[_who] = true;
-        } else if (keccak256(abi.encodePacked(_entity)) == keccak256(abi.encodePacked("pharmacist"))) {
+        } else if (_entity == keccak256(abi.encodePacked("pharmacist"))) {
             isPharmacist[_who] = true;
         }
     }
 
-    function isEntity(address _who) public view returns (string memory) {
+    function isEntity(address _who) public view returns (bytes32) {
         if (isDoctor[_who]) {
-            return "doctor";
+            return keccak256(abi.encodePacked("DoctorInterface"));
         } else if (isClient[_who]) {
-            return "client";
+            return keccak256(abi.encodePacked("ClientInterface"));
         } else if (isPharmacist[_who]) {
-            return "pharmacist";
+            return keccak256(abi.encodePacked("PharmacistInterface"));
         } else if (isAdmin[_who]) {
-            return "admin";
+            return keccak256(abi.encodePacked("AdminInterface"));
         }
 
-        return "";
+        return keccak256(abi.encodePacked(""));
     }
 }

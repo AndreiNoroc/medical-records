@@ -1,29 +1,22 @@
-.column {
-    float: left;
-    width: 47%;
-    padding: 10px;
-}
-
-.row:after {
-    content: "";
-    display: table;
-    clear: both;
-}
-
 #docHeader {
     margin-left: 5%;
+    align-content: center;
 }
 
 #docChooseInterface {
+    content: "";
+    display: flex;
+    clear: both;
     margin-bottom: 20px;
+    margin-top: 20px;
+    margin-left: 5%;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 #docChooseInterface button {
     height: 30px;
-    margin-inline-start: 10px;
-}
-
-form div {
-    margin-inline-start: 10px;
-    margin-bottom: 25px;
+    padding: 5px 10px;
+    margin-left: 30px;
+    margin-right: 10px;
 }

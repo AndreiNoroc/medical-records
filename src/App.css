@@ -2,6 +2,80 @@
   text-align: center;
 }
 
-#appheader {
+button {
+  border-radius: 8px;
+  white-space: nowrap;
+  border-color: transparent;
+  background-color: #F08080;
+}
+
+.formInfo {
   margin-left: 5%;
+  width: 60%;
+  flex-direction: column;
+  display: flex;
+}
+
+.formInfo label {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.formInfo input, select, textarea {
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.formInfo button {
+  width: 30%;
+  height: 35px;
+  margin-top: 10px;
+}
+
+textarea {
+  resize: none;
+}
+
+.column {
+  width: 500px;
+  padding: 10px;
+  flex: 1 1 40%;
+}
+
+.column h2 {
+  margin-left: 5%;
+}
+
+.column button {
+  display: inline-block;
+}
+
+.columnDrugList {
+  display: inline-block;
+}
+
+.columnDrugList button {
+  margin-left: 10px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* .row:after {
+  content: "";
+  display: table;
+  clear: both;
+} */
+
+#resultText {
+  outline: none;
+}
+
+.pColor {
+  margin-top: -0px;
+  color: red;
 }

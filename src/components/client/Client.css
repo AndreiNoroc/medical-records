@@ -1,0 +1,7 @@
+#actionButtons {
+    position: relative;
+}
+
+#actionButtons button:nth-child(2) {
+    margin-left: 50px;
+}

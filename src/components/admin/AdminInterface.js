@@ -1,3 +1,4 @@
+import "./Admin.css"
 import AdminInsert from "./AdminInsert";
 
 const AdminInterface = () => {
