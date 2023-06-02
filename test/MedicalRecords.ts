@@ -1,8 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import "hardhat-gas-reporter";
-import { get } from "node:http";
 
 describe("MedicalRecords", function () {
     async function deployContractAndSetVariables() {
@@ -61,6 +59,7 @@ describe("MedicalRecords", function () {
 
     it("should deploy and set owner value correctly", async function() {
         const { medicalRecords, owner, otherAccount } = await loadFixture(deployContractAndSetVariables);
+        expect(medicalRecords.address).to.equal("0x5FbDB2315678afecb367f032d93F642f64180aa3");
         expect(owner.address).to.equal("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
     });
 
@@ -200,6 +199,68 @@ describe("MedicalRecords", function () {
                 expect(error.reason).to.equal("Current account is not a client!");
             }
         });
+
+        it("should listen to the RequestDataTransaction event", async function () {
+            const { medicalRecords, owner, otherAccount, secondAccount } = await loadFixture(deployContractAndSetVariables);
+            const { publicKey, privateKey, key, readyPackage } = await loadFixture(preparePackageForInsertion);
+            
+            const {
+                publicEncrypt
+            } = await import('node:crypto');
+
+            const encryptedPack: any = publicEncrypt(publicKey, Buffer.from("Data request", 'base64'));
+            const tx = await medicalRecords.connect(otherAccount).requestDataFromClient(secondAccount.address, encryptedPack.toString());
+
+            let emittedEvents:any = [];
+            const receipt:any = await tx.wait()
+            receipt.events.forEach((ev: { event: any; args: any; }) => {
+                if (ev.event) {
+                    emittedEvents.push({
+                        name: ev.event,
+                        args: ev.args
+                    });
+                }
+            });
+
+            expect(emittedEvents[0].name).to.equal('RequestDataTransaction');
+            expect(emittedEvents[0].args._from).to.equal(otherAccount.address);
+            expect(emittedEvents[0].args._to).to.equal(secondAccount.address);
+            expect(emittedEvents[0].args._value).to.equal(encryptedPack.toString());
+        });
+
+        it("should show error when a client account try to make a request (RequestDataTransaction event) for data", async function () {
+            try {
+                const { medicalRecords, owner, otherAccount, secondAccount } = await loadFixture(deployContractAndSetVariables);
+                const { publicKey, privateKey, key, readyPackage } = await loadFixture(preparePackageForInsertion);
+                
+                const {
+                    publicEncrypt
+                } = await import('node:crypto');
+
+                const encryptedPack: any = publicEncrypt(publicKey, Buffer.from("Data request", 'base64'));
+                await medicalRecords.connect(secondAccount).requestDataFromClient(secondAccount.address, encryptedPack.toString());
+                expect.fail("Expected an error to be thrown!");
+            } catch (error: any) {
+                expect(error.message).to.equal("VM Exception while processing transaction: reverted with reason string 'Only doctors and pharmacists can request data!'");
+            }
+        });
+
+        it("should show error when the receiver of the RequestDataTransaction event is an entity different from a client", async function () {
+            try {
+                const { medicalRecords, owner, otherAccount, secondAccount, pharmacistAccount } = await loadFixture(deployContractAndSetVariables);
+                const { publicKey, privateKey, key, readyPackage } = await loadFixture(preparePackageForInsertion);
+                
+                const {
+                    publicEncrypt
+                } = await import('node:crypto');
+
+                const encryptedPack: any = publicEncrypt(publicKey, Buffer.from("Data request", 'base64'));
+                await medicalRecords.connect(otherAccount).requestDataFromClient(pharmacistAccount.address, encryptedPack.toString());
+                expect.fail("Expected an error to be thrown!");
+            } catch (error: any) {
+                expect(error.message).to.equal("VM Exception while processing transaction: reverted with reason string 'Receiver can only be a client!'");
+            }
+        });
     });
 
     describe("Pharmacist", function () {
@@ -293,7 +354,7 @@ describe("MedicalRecords", function () {
             expect(data).to.equal(true);
         });
 
-        it("", async function () {
+        it("should show error if anybody else than a pharmacist try to outdate a prescription", async function () {
             try {
             const { medicalRecords, owner, otherAccount, secondAccount, pharmacistAccount } = await loadFixture(deployContractAndSetVariables);
             const { publicKey, privateKey, key, readyPackage } = await loadFixture(preparePackageForInsertion);
@@ -302,6 +363,68 @@ describe("MedicalRecords", function () {
             expect.fail("Expected an error to be thrown!");
             } catch(error: any) {
                 expect(error.message).to.equal("VM Exception while processing transaction: reverted with reason string 'Only pharmacists can outdate a prescription!'");
+            }
+        });
+
+        it("listen to the SendResponse event", async function () {
+            const { medicalRecords, owner, otherAccount, secondAccount, pharmacistAccount } = await loadFixture(deployContractAndSetVariables);
+            const { publicKey, privateKey, key, readyPackage } = await loadFixture(preparePackageForInsertion);
+            
+            const {
+                publicEncrypt
+            } = await import('node:crypto');
+
+            const encryptedPack: any = publicEncrypt(publicKey, Buffer.from("Data response", 'base64'));
+            const tx = await medicalRecords.connect(secondAccount).sendResponse(pharmacistAccount.address, encryptedPack.toString());
+
+            let emittedEvents:any = [];
+            const receipt:any = await tx.wait()
+            receipt.events.forEach((ev: { event: any; args: any; }) => {
+                if (ev.event) {
+                    emittedEvents.push({
+                        name: ev.event,
+                        args: ev.args
+                    });
+                }
+            });
+
+            expect(emittedEvents[0].name).to.equal('SendResponse');
+            expect(emittedEvents[0].args._from).to.equal(secondAccount.address);
+            expect(emittedEvents[0].args._to).to.equal(pharmacistAccount.address);
+            expect(emittedEvents[0].args._value).to.equal(encryptedPack.toString());
+        });
+
+        it("should show error when the sender of the response is an entity different from a client", async function() {
+            try {
+                const { medicalRecords, owner, otherAccount, secondAccount, pharmacistAccount } = await loadFixture(deployContractAndSetVariables);
+                const { publicKey, privateKey, key, readyPackage } = await loadFixture(preparePackageForInsertion);
+                
+                const {
+                    publicEncrypt
+                } = await import('node:crypto');
+
+                const encryptedPack: any = publicEncrypt(publicKey, Buffer.from("Data response", 'base64'));
+                await medicalRecords.connect(pharmacistAccount).sendResponse(otherAccount.address, encryptedPack.toString());
+                expect.fail("Expected an error to be thrown!");
+            } catch (error:any) {
+                expect(error.message).to.equal("VM Exception while processing transaction: reverted with reason string 'Only clients can send response!'");
+            }
+        });
+
+        it("should show error when the receiver of the response is an entity different from a doctor or pharmacist", async function() {
+            try {
+                const { medicalRecords, owner, otherAccount, secondAccount, pharmacistAccount } = await loadFixture(deployContractAndSetVariables);
+                const { publicKey, privateKey, key, readyPackage } = await loadFixture(preparePackageForInsertion);
+                
+                const {
+                    publicEncrypt
+                } = await import('node:crypto');
+
+                const encryptedPack: any = publicEncrypt(publicKey, Buffer.from("Data response", 'base64'));
+                await medicalRecords.connect(secondAccount).sendResponse(owner.address, encryptedPack.toString());
+                expect.fail("Expected an error to be thrown!");
+            } catch (error:any) {
+                expect(error.message).to.equal("VM Exception while processing transaction: reverted with reason string 'Receiver can only be a doctor or a pharmacist!'");
             }
         });
     });

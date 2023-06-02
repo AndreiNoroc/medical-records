@@ -16,11 +16,12 @@ const config: HardhatUserConfig = {
   },
   gasReporter: {
     enabled: true,
-    outputFile: "gas-reporter.txt",
+    // outputFile: "gas-reporter.txt",
     noColors: true,
     currency: "USD",
     coinmarketcap: COINMARKETCAP,
     token: "MATIC",
+    showTimeSpent: true
   }
 };
 

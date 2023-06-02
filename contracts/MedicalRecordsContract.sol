@@ -47,11 +47,13 @@ contract MedicalRecordsContract {
 
     function requestDataFromClient(address _to, string memory _value) public {
         require(isDoctor[msg.sender] || isPharmacist[msg.sender], "Only doctors and pharmacists can request data!");
+        require(isClient[_to], "Receiver can only be a client!");
         emit RequestDataTransaction(msg.sender, _to, _value);
     }
 
     function sendResponse(address _to, string memory _value) public {
         require(isClient[msg.sender], "Only clients can send response!");
+        require(isDoctor[_to] || isPharmacist[_to], "Receiver can only be a doctor or a pharmacist!");
         emit SendResponse(msg.sender, _to, _value);
     }
 
