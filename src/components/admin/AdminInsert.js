@@ -72,7 +72,6 @@ const AdminInsert = () => {
 
                     const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
 
-                    console.log(selectedOption);
                     const hashSelectedOption = web3.utils.soliditySha3(selectedOption).toString();
                     await contract.methods.insertEntity(hashSelectedOption, accountAddress).send({ from: accounts[0] });
 
@@ -83,7 +82,6 @@ const AdminInsert = () => {
                 }
             } catch (error) {
                 toast.error(error.message);
-                console.log(error.message);
             }
     };
 
@@ -119,7 +117,7 @@ const AdminInsert = () => {
             </div>
         );
     } catch (error) {
-        console.log(error);
+        toast.error(error);
         return null;
     }
 };

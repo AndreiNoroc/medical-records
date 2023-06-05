@@ -6,7 +6,9 @@ button {
   border-radius: 8px;
   white-space: nowrap;
   border-color: transparent;
-  background-color: #F08080;
+  /* background-color: #F08080; */
+  background-color: #007cb9;
+  color: white;
 }
 
 .formInfo {

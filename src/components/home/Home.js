@@ -1,3 +1,4 @@
+import "./Home.css";
 import React, { useState } from "react";
 import ClientInterface from "../client/ClientInterface";
 import DoctorInterface from "../doctor/DoctorInterface";
@@ -5,7 +6,6 @@ import AdminInterface from "../admin/AdminInterface";
 import PharmacistInterface from "../pharmacist/PharmacistInterface";
 import Web3 from 'web3';
 import MedicalRecordsContract from '../../artifacts/contracts/MedicalRecordsContract.sol/MedicalRecordsContract.json';
-import "./Home.css";
 
 const Home = () => {
     const [isInterface , setIsInterface] = useState('');

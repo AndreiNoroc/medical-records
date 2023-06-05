@@ -180,15 +180,12 @@ function ClientGetData() {
                     const decryptedPack = JSON.parse(decryptorInstance.decrypt(transaction));
         
                     if (decryptedPack) {
-                        console.log(decryptedPack);
-                        console.log(await web3.eth.personal.ecRecover(decryptedPack.message, decryptedPack.sign));
                         if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAddress &&
                             web3.eth.accounts.recover(decryptedPack.drugListState, decryptedPack.dLSign) === decryptedPack.dLLastModifiedBy) {
-                            console.log(decryptedPack.message);
                             const jsonMessage = JSON.parse(decryptedPack.message);
                             setClientGetResult("Pacient Name: " + jsonMessage.name + "\n\n" + "Description: " + jsonMessage.description + "\n");
                             setDrugsList(JSON.parse(decryptedPack.drugListState));
-
+                            toast.success("The data was successfully got!");
                             setIdentityNumber('');
                             setConsultType('');
                             setConsultDate('');
@@ -205,7 +202,7 @@ function ClientGetData() {
                     }
                 }
             } catch(error) {
-                console.log(error);
+                toast.error(error);
             }
     };
 
@@ -266,24 +263,15 @@ function ClientGetData() {
                 
                 await window.ethereum.request({method: 'eth_requestAccounts'});
                 const accounts = await web3.eth.getAccounts();
-
                 const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
-
-                console.log(receivedKey);
-
                 const transaction = await contract.methods.readData(receivedKey).call({ from: accounts[0] });
-
-                console.log(transaction);
 
                 const decryptorInstance = new JSEncrypt();
                 decryptorInstance.setPrivateKey(acceptPrivateKey);
                 const decryptedPack = JSON.parse(decryptorInstance.decrypt(transaction));
-                console.log(decryptedPack);
-
                 if (decryptedPack) {
                     if (web3.eth.accounts.recover(decryptedPack.message, decryptedPack.sign) === decryptedPack.docAddress &&
                         web3.eth.accounts.recover(decryptedPack.drugListState, decryptedPack.dLSign) === decryptedPack.dLLastModifiedBy) {
-                        console.log(decryptedPack);
 
                         const signature = await web3.eth.personal.sign(decryptedPack.message, accounts[0]);
 
@@ -301,14 +289,8 @@ function ClientGetData() {
                         const encryptorInstance = new JSEncrypt();
                         encryptorInstance.setPublicKey(entityPublicKey);
                         const encryptData = encryptorInstance.encrypt(JSON.stringify(newPackage));
-        
-                        console.log(encryptData);
-
-                        console.log(receivedTo);
 
                         const transaction = await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
-                        console.log(transaction);
-
                         setReceivedKey('');
                     } else {
                         toast.error("Message for sending is corrupt!");
@@ -321,41 +303,36 @@ function ClientGetData() {
                 setEntityPublicKey('');
             }
         } catch(err) {
-            console.log(err);
+            toast.error(err);
         }
     };
 
     const handleDecline = async () => {
         if (checkAcceptanceField() && window.ethereum) {
             try {
-            const web3 = new Web3(window.ethereum);
+                const web3 = new Web3(window.ethereum);
+                await window.ethereum.request({method: 'eth_requestAccounts'});
+                const accounts = await web3.eth.getAccounts();
+                const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
                 
-            await window.ethereum.request({method: 'eth_requestAccounts'});
-            const accounts = await web3.eth.getAccounts();
+                const declineMessage = "Request declined!";
+                const signature = await web3.eth.personal.sign(declineMessage, accounts[0]);
+                const newPackage = {
+                    'message': declineMessage,
+                    'sign': signature,
+                    'clientAddress': accounts[0]
+                };
 
-            const contract = new web3.eth.Contract(MedicalRecordsContract.abi, web3.utils.toChecksumAddress(process.env.REACT_APP_CONTRACT_ADDRESS));
+                const encryptorInstance = new JSEncrypt();
+                encryptorInstance.setPublicKey(entityPublicKey);
+                const encryptData = encryptorInstance.encrypt(JSON.stringify(newPackage));
 
-            const declineMessage = "Request declined!";
-
-            const signature = await web3.eth.personal.sign(declineMessage, accounts[0]);
-
-            const newPackage = {
-                'message': declineMessage,
-                'sign': signature,
-                'clientAddress': accounts[0]
-            };
-
-            const encryptorInstance = new JSEncrypt();
-            encryptorInstance.setPublicKey(entityPublicKey);
-            const encryptData = encryptorInstance.encrypt(JSON.stringify(newPackage));
-
-            const transaction = await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
-
-            setAcceptPrivateKey('');
-            setEntityPublicKey('');
-            setReceivedKey('');
+                const transaction = await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
+                setAcceptPrivateKey('');
+                setEntityPublicKey('');
+                setReceivedKey('');
             } catch(err) {
-                console.log(err);
+                toast.error(err);
             } 
         }
     };
@@ -386,7 +363,6 @@ function ClientGetData() {
             };
     
             contractAccept.once('RequestDataTransaction', options, function(error, event) {
-                console.log(event);
                 setReceivedLogId(event.id);
                 setAuxReceivedKey(event.returnValues._value);
                 setReceivedTo(event.returnValues._from);
@@ -501,9 +477,10 @@ function ClientGetData() {
                         </div>
 
                         <div className='column'>
+                            <h2>Extracted data</h2>
                             <div className='formInfo'>
                                 <textarea id='resultText' readOnly rows={10} cols={30} defaultValue={clientGetResult} />
-                                {drugsList ? (<label>Drugs list</label>):(<p>No drugs list was provided! </p>)}
+                                {drugsList ? (<label>Medicines list</label>):(<p> No medicines list was provided! </p>)}
                                 {renderDrugsList()}
                             </div>
                         </div>
@@ -513,7 +490,7 @@ function ClientGetData() {
             </div>
         );
     } catch(error) {
-        console.log(error);
+        toast.error(error);
         return null;
     }
 }

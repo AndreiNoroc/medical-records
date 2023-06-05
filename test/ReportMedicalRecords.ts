@@ -92,7 +92,7 @@ describe("ReportMedicalRecords", function () {
         return { publicKey, privateKey, key, keySecond, readyPackage, readyPackageBig };
     }
 
-    it("simple scenario client-doctor-pharmacist", async function () {
+    it.only("simple scenario client-doctor-pharmacist", async function () {
         const { medicalRecords, owner, doctorAccount, clientAccount, pharmacistAccount } = await loadFixture(deployContractAndSetVariables);
         const { publicKey, privateKey, key, keySecond, readyPackage, readyPackageBig } = await loadFixture(preparePackageForInsertion);
 
@@ -152,7 +152,7 @@ describe("ReportMedicalRecords", function () {
         expect(emittedEvents[0].args._value).to.equal(encryptedDataPack.toString('base64'));
     });
 
-    it.only("complex scenario", async function () {
+    it("complex scenario", async function () {
         const { medicalRecords, owner, doctorAccount, clientAccount, pharmacistAccount, doctorSecondAccount, clientSecondAccount, pharmacistSecondAccount } = await loadFixture(deployContractAndSetVariables);
         const { publicKey, privateKey, key, keySecond, readyPackage,  readyPackageBig} = await loadFixture(preparePackageForInsertion);
 

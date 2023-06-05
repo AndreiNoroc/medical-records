@@ -1,9 +1,11 @@
 #appheader {
-    background-color: #F08080;
+    /* background-color: #F08080; */
+    background-color: #007cb9;
     align-items: center;
     display: flex;
     height: 80px;
     width: 100%;
+    color: white;
 }
 
 h1 {

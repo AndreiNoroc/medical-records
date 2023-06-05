@@ -192,7 +192,7 @@ function DoctorGetData() {
                     console.log(await transaction);
                 }
             } catch(error) {
-                console.log(error);
+                toast.error(error);
             }
     };
 
@@ -207,7 +207,7 @@ function DoctorGetData() {
                 ));
             }
         } catch (error) {
-            console.log(error);
+            toast.error(error);
         }
     };
     
@@ -227,7 +227,6 @@ function DoctorGetData() {
                 };
         
                 contractAccept.once('SendResponse', options, function(error, event) {
-                    console.log(event);
                     setReceivedLogId(event.id);
                     setAuxReceivedData(event.returnValues._value);
                 });
@@ -235,7 +234,7 @@ function DoctorGetData() {
 
             getPastEventsFromDoc();
         } catch(error) {
-            console.log(error);
+            toast.error(error);
         }
     });
 
@@ -247,8 +246,6 @@ function DoctorGetData() {
                 const decryptorInstance = new JSEncrypt();
                 decryptorInstance.setPrivateKey(privateKey);
                 const decryptedPack = JSON.parse(decryptorInstance.decrypt(auxReceivedData));
-
-                console.log(decryptedPack);
 
                 if (decryptedPack) {
                     const web3Browser = new Web3(window.ethereum);
@@ -281,7 +278,7 @@ function DoctorGetData() {
                 setPrivateKey('');
             }
         } catch(error) {
-            console.log(error);
+            toast.error(error);
         }
     }, [receivedLogId]);
 
@@ -348,7 +345,7 @@ function DoctorGetData() {
                     <h2>Extracted data</h2>
                     <div className='formInfo'>
                         <textarea id='resultText' readOnly rows={10} cols={30} defaultValue={receivedData}/>                        
-                        {drugsList ? (<label>Drugs list</label>):(<p>No drugs list was provided! </p>)}
+                        {drugsList ? (<label>Medicines list</label>):(<p> No medicines list was provided! </p>)}
                         {renderDrugsList()}
                     </div>
                 </div>
@@ -356,7 +353,7 @@ function DoctorGetData() {
             </div>
         );
     } catch(error) {
-        console.log(error);
+        toast.error(error);
         return null;
     }
 }

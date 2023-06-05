@@ -92,7 +92,7 @@ function DoctorInsert() {
             </div>
             ));
         } catch (error) {
-            console.log(error);
+            toast.error(error);
         }
     };
 
@@ -259,7 +259,6 @@ function DoctorInsert() {
                     const signature = await web3.eth.personal.sign(stringifyMessage, accounts[0]);
 
                     const dlSignature = await web3.eth.personal.sign(dlStringify, accounts[0]);
-                    console.log(drugsList);
 
                     const newPackage = {
                         'message': stringifyMessage,
@@ -270,14 +269,9 @@ function DoctorInsert() {
                         'dLSign': dlSignature
                     };
 
-                    console.log(newPackage);
-        
                     const encryptorInstance = new JSEncrypt();
                     encryptorInstance.setPublicKey(clientPublicKey);
-                    console.log(JSON.stringify(newPackage));
                     const encryptedPack = encryptorInstance.encrypt(JSON.stringify(newPackage));
-
-                    console.log(encryptedPack);
 
                     await contract.methods.insertData(key, encryptedPack).send({ from: accounts[0] });
 
@@ -291,7 +285,6 @@ function DoctorInsert() {
                     setDrugsList([{'name': '', 'pickedUp': false}]);
                 }
             } catch (err) {
-                console.log(err);
                 toast.error(err);
             }
     };
@@ -370,7 +363,7 @@ function DoctorInsert() {
             </div>
         );
     } catch(error) {
-        console.log(error);
+        toast.error(error);
         return null;
     }
 }

@@ -214,7 +214,7 @@ function PharmacistGetData() {
                     setDataKey(key);
                 }
             } catch(error) {
-                console.log(error);
+                toast.error(error);
             }
         }
     };
@@ -271,7 +271,7 @@ function PharmacistGetData() {
                 setClientPublicKey('');
             }
         } catch (error) {
-            console.log(error);
+            toast.error(error);
         }
     };
 
@@ -295,7 +295,7 @@ function PharmacistGetData() {
                 ));
             }
         } catch (error) {
-            console.log(error);
+            toast.error(error);
         }
     };
 
@@ -315,7 +315,6 @@ function PharmacistGetData() {
                 };
         
                 contractAccept.once('SendResponse', options, function(error, event) {
-                    console.log(event);
                     setReceivedLogId(event.id);
                     setAuxReceivedData(event.returnValues._value);
                 });
@@ -323,7 +322,7 @@ function PharmacistGetData() {
 
             getPastEventsFromDoc();
         } catch (error) {
-            console.log(error);
+            toast.error(error);
         }
     });
 
@@ -335,8 +334,6 @@ function PharmacistGetData() {
                 const decryptorInstance = new JSEncrypt();
                 decryptorInstance.setPrivateKey(privateKey);
                 const decryptedPack = JSON.parse(decryptorInstance.decrypt(auxReceivedData));
-
-                console.log(decryptedPack);
 
                 if (decryptedPack) {
                     const web3Browser = new Web3(window.ethereum);
@@ -374,7 +371,7 @@ function PharmacistGetData() {
                 setPrivateKey('');
             }
         } catch(error) {
-            console.log(error);
+            toast.error(error);
         }
     }, [receivedLogId]);
 
@@ -439,7 +436,7 @@ function PharmacistGetData() {
             <div className='column'>
                 <div className='formInfo'>
                     <textarea id='resultText' readOnly rows={10} cols={30} defaultValue={receivedData}/>
-                    {drugsList ? (<label>Drugs list</label>):(<p>No drugs list was provided! </p>)}
+                    {drugsList ? (<label>Medicines list</label>):(<p> No medicines list was provided! </p>)}
                     {renderDrugsList()}
                     { receivedData ? (
                         <div>
@@ -462,7 +459,7 @@ function PharmacistGetData() {
         </div>
     );
     } catch(error) {
-        console.log(error);
+        toast.error(error);
         return null;
     }
 }
