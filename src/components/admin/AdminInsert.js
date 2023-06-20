@@ -13,6 +13,8 @@ const AdminInsert = () => {
     const [errorSelectedOption, setErrorSelectedOption] = useState('');
     const [outlineSelectedOption, setOutlineSelectedOption] = useState({outline: 'none'});
 
+    const ethereumAddressRegex = /^0x[a-fA-F0-9]{40}$/g;
+
     const handleOptionChange = (event) => {
         setSelectedOption(event.target.value);
     };
@@ -32,11 +34,19 @@ const AdminInsert = () => {
                 });
                 ok = false;
             } else {
-                setErrorAccountAddress('');
-                setOutlineAccountAddress({
-                    outline: 'none',
-                });
-                ok = ok && true;
+                if (!ethereumAddressRegex.test(accountAddress)) {
+                    setErrorAccountAddress('This field may contain only 0x and alphanumerics!');
+                    setOutlineAccountAddress({
+                        outline: 'red solid 1px',
+                    });
+                    ok = false;
+                } else {
+                    setErrorAccountAddress('');
+                    setOutlineAccountAddress({
+                        outline: 'none',
+                    });
+                    ok = ok && true;
+                }
             }
         } else {
             setErrorAccountAddress('This field may not be blank!');

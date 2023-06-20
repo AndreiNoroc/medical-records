@@ -31,6 +31,7 @@ function DoctorGetData() {
     const lettersAndSpacesOnly = /^[A-Za-z ]+$/;
     const digitsOnly = /^\d*$/;
     const keyCharacters = /^[a-zA-Z0-9\s\-+=/]+$/;
+    const ethereumAddressRegex = /^0x[a-fA-F0-9]{40}$/g;
     
     const [receivedData, setReceivedData] = React.useState('');
     const [auxReceivedData, setAuxReceivedData] = React.useState('');
@@ -61,11 +62,19 @@ function DoctorGetData() {
         
         if (accountAddress) {
             if (accountAddress.length !== 42) {
-                setErrorAccountAddress('The account address length may be 42!');
-                setOutlineAccountAddress({
-                    outline: 'red solid 1px',
-                });
-                ok = false;
+                if (!ethereumAddressRegex.test(accountAddress)) {
+                    setErrorAccountAddress('This field may contain only 0x and alphanumerics!');
+                    setOutlineAccountAddress({
+                        outline: 'red solid 1px',
+                    });
+                    ok = false;
+                } else {
+                    setErrorAccountAddress('');
+                    setOutlineAccountAddress({
+                        outline: 'none',
+                    });
+                    ok = ok && true;
+                }
             } else {
                 setErrorAccountAddress('');
                 setOutlineAccountAddress({

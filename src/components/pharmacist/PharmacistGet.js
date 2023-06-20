@@ -41,6 +41,7 @@ function PharmacistGetData() {
     const lettersAndSpacesOnly = /^[A-Za-z ]+$/;
     const digitsOnly = /^\d*$/;
     const keyCharacters = /^[a-zA-Z0-9\s\-+=/]+$/;
+    const ethereumAddressRegex = /^0x[a-fA-F0-9]{40}$/g;
 
     const handleIdentityNumber = (event) => {
         setIdentityNumber(event.target.value);
@@ -71,11 +72,19 @@ function PharmacistGetData() {
         
         if (accountAddress) {
             if (accountAddress.length !== 42) {
-                setErrorAccountAddress('The account address length may be 42!');
-                setOutlineAccountAddress({
-                    outline: 'red solid 1px',
-                });
-                ok = false;
+                if (!ethereumAddressRegex.test(accountAddress)) {
+                    setErrorAccountAddress('This field may contain only 0x and alphanumerics!');
+                    setOutlineAccountAddress({
+                        outline: 'red solid 1px',
+                    });
+                    ok = false;
+                } else {
+                    setErrorAccountAddress('');
+                    setOutlineAccountAddress({
+                        outline: 'none',
+                    });
+                    ok = ok && true;
+                }
             } else {
                 setErrorAccountAddress('');
                 setOutlineAccountAddress({
@@ -208,8 +217,7 @@ function PharmacistGetData() {
                     setConsultDate('');
                     setPrivateKey('');
                 } else {
-                    const transaction = await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
-                    console.log(await transaction);
+                    await contract.methods.requestDataFromClient(accountAddress, key).send({ from: accounts[0] });
                     toast.success("The request has been successfully sent!");
                     setDataKey(key);
                 }
@@ -434,6 +442,7 @@ function PharmacistGetData() {
                 </div>
             </div>
             <div className='column'>
+                <h2>Extracted data</h2>
                 <div className='formInfo'>
                     <textarea id='resultText' readOnly rows={10} cols={30} defaultValue={receivedData}/>
                     {drugsList ? (<label>Medicines list</label>):(<p> No medicines list was provided! </p>)}

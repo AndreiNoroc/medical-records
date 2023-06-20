@@ -290,7 +290,7 @@ function ClientGetData() {
                         encryptorInstance.setPublicKey(entityPublicKey);
                         const encryptData = encryptorInstance.encrypt(JSON.stringify(newPackage));
 
-                        const transaction = await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
+                        await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
                         setReceivedKey('');
                     } else {
                         toast.error("Message for sending is corrupt!");
@@ -327,7 +327,7 @@ function ClientGetData() {
                 encryptorInstance.setPublicKey(entityPublicKey);
                 const encryptData = encryptorInstance.encrypt(JSON.stringify(newPackage));
 
-                const transaction = await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
+                await contract.methods.sendResponse(receivedTo, encryptData).send({ from: accounts[0] });
                 setAcceptPrivateKey('');
                 setEntityPublicKey('');
                 setReceivedKey('');
