@@ -1,70 +1,110 @@
-# Getting Started with Create React App
+# Medical Records Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a decentralized application (DApp) for managing medical records securely and efficiently. It leverages blockchain technology to ensure data integrity, transparency, and privacy. The system is built using React for the frontend and Solidity for the smart contract backend, with Hardhat as the development environment.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Role-Based Access Control**: Different roles such as Admin, Doctor, Client, and Pharmacist with specific permissions.
+- **Data Management**:
+  - Doctors can insert new medical records.
+  - Pharmacists can update or mark prescriptions as outdated.
+  - Clients can view their medical records.
+- **Blockchain-Powered**: Ensures data immutability and secure transactions.
+- **React Frontend**: A user-friendly interface for interacting with the system.
 
-### `npm start`
+## Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend**: React, React Router
+- **Backend**: Solidity smart contracts
+- **Development Tools**: Hardhat, TypeScript
+- **Blockchain Interaction**: Ethers.js, Web3.js
+- **Testing**: Chai, Mocha
+- **Environment Management**: dotenv
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Project Structure
 
-### `npm test`
+- `contracts/`: Contains the Solidity smart contract `MedicalRecordsContract.sol`.
+- `scripts/`: Deployment scripts for the smart contract.
+- `src/`: React frontend code, organized into components for different user roles (Admin, Doctor, Client, Pharmacist).
+- `public/`: Static assets for the React app.
+- `test/`: Test files for the smart contract.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Getting Started
 
-### `npm run build`
+### Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Node.js (v16 or later)
+- npm or yarn
+- Hardhat
+- A blockchain wallet (e.g., MetaMask)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/AndreiNoroc/medical-records.git
+   cd medical-records
+   ```
 
-### `npm run eject`
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add the following:
+   ```
+   COINMARKET_API_KEY=your_coinmarketcap_api_key
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Running the Application
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Start the local blockchain:
+   ```bash
+   npx hardhat node
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. Deploy the smart contract:
+   ```bash
+   npx hardhat run scripts/deploy.ts --network localhost
+   ```
+
+3. Start the React development server:
+   ```bash
+   npm start
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Testing
+
+Run the test suite to ensure everything is working correctly:
+```bash
+npx hardhat test
+```
+
+## Smart Contract Overview
+
+The `MedicalRecordsContract` includes the following functionalities:
+
+- **Insert Data**: Allows doctors to add new medical records.
+- **Update Data**: Enables pharmacists to update existing records.
+- **Read Data**: Allows clients to view their records.
+- **Outdate Data**: Lets pharmacists mark prescriptions as outdated.
+
+## Deployment
+
+To deploy the application to a live network:
+
+1. Update the `hardhat.config.ts` file with the desired network configuration.
+2. Run the deployment script:
+   ```bash
+   npx hardhat run scripts/deploy.ts --network <network-name>
+   ```
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- [React Documentation](https://reactjs.org/)
+- [Hardhat Documentation](https://hardhat.org/)
+- [Solidity Documentation](https://docs.soliditylang.org/)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
